@@ -1,6 +1,6 @@
 package com.springboot.MyTodoList.repository;
 
-import com.springboot.MyTodoList.model.ToDoItem;
+import com.springboot.MyTodoList.model.Subtask;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -11,10 +11,9 @@ import java.util.List;
 @Repository
 @Transactional
 @EnableTransactionManagement
-public interface ToDoItemRepository extends JpaRepository<ToDoItem, Long> {
+public interface SubtaskRepository extends JpaRepository<Subtask, Long> {
     
-    List<ToDoItem> findByStatus(String status);
+    List<Subtask> findByMainTaskId(Long mainTaskId);
     
-    List<ToDoItem> findByProgressGreaterThanEqual(double progress);
-    
+    List<Subtask> findByMainTaskIdAndCompleted(Long mainTaskId, boolean completed);
 }

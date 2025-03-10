@@ -88,7 +88,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				String done = messageTextFromTelegram.substring(0,
 						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
-				Integer id = Integer.valueOf(done);
+				Long id = Long.valueOf(done);
 
 				try {
 
@@ -105,7 +105,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				String undo = messageTextFromTelegram.substring(0,
 						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
-				Integer id = Integer.valueOf(undo);
+				Long id = Long.valueOf(undo);
 
 				try {
 
@@ -122,7 +122,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				String delete = messageTextFromTelegram.substring(0,
 						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
-				Integer id = Integer.valueOf(delete);
+				Long id = Long.valueOf(delete);
 
 				try {
 
@@ -249,7 +249,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	// GET BY ID /todolist/{id}
-	public ResponseEntity<ToDoItem> getToDoItemById(@PathVariable int id) {
+	public ResponseEntity<ToDoItem> getToDoItemById(@PathVariable Long id) {
 		try {
 			ResponseEntity<ToDoItem> responseEntity = toDoItemService.getItemById(id);
 			return new ResponseEntity<ToDoItem>(responseEntity.getBody(), HttpStatus.OK);
@@ -271,7 +271,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	// UPDATE /todolist/{id}
-	public ResponseEntity updateToDoItem(@RequestBody ToDoItem toDoItem, @PathVariable int id) {
+	public ResponseEntity updateToDoItem(@RequestBody ToDoItem toDoItem, @PathVariable Long id) {
 		try {
 			ToDoItem toDoItem1 = toDoItemService.updateToDoItem(id, toDoItem);
 			System.out.println(toDoItem1.toString());
@@ -283,7 +283,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	}
 
 	// DELETE todolist/{id}
-	public ResponseEntity<Boolean> deleteToDoItem(@PathVariable("id") int id) {
+	public ResponseEntity<Boolean> deleteToDoItem(@PathVariable("id") Long id) {
 		Boolean flag = false;
 		try {
 			flag = toDoItemService.deleteToDoItem(id);
