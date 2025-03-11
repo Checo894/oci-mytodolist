@@ -13,6 +13,9 @@ public class ToDoItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(name = "TITLE", length = 100)
+    private String title;
+
     @Column(name = "DESCRIPTION", length = 4000)
     private String description;
     
@@ -41,8 +44,9 @@ public class ToDoItem {
     public ToDoItem() {
     }
     
-    public ToDoItem(Long id, String description, OffsetDateTime creation_ts, boolean done, OffsetDateTime startDate, OffsetDateTime endDate, double progress, String status) {
+    public ToDoItem(Long id, String title, String description, OffsetDateTime creation_ts, boolean done, OffsetDateTime startDate, OffsetDateTime endDate, double progress, String status) {
         this.id = id;
+        this.title = title;
         this.description = description;
         this.creation_ts = creation_ts;
         this.done = done;
@@ -60,6 +64,14 @@ public class ToDoItem {
         this.id = id;
     }
     
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -133,6 +145,7 @@ public class ToDoItem {
     public String toString() {
         return "ToDoItem{" +
                 "id=" + id +
+                ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", creation_ts=" + creation_ts +
                 ", done=" + done +

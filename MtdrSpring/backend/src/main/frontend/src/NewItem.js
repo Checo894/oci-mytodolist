@@ -12,51 +12,75 @@
 import React, { useState } from "react";
 import Button from '@mui/material/Button';
 
-
 function NewItem(props) {
-  const [item, setItem] = useState('');
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   function handleSubmit(e) {
-    // console.log("NewItem.handleSubmit("+e+")");
-    if (!item.trim()) {
+    e.preventDefault();
+    if (!title.trim()) {
       return;
     }
-    // addItem makes the REST API call:
-    props.addItem(item);
-    setItem("");
-    e.preventDefault();
+    
+    // Crear un nuevo objeto con los datos
+    const newItem = {
+      title: title,
+      description: description,
+      status: "Not Started",
+      progress: 0,
+      done: false,
+      startDate: new Date().toISOString(),
+      endDate: endDate ? new Date(endDate).toISOString() : null,
+      subtasks: [],
+    };
+    
+    // Llamar la función de agregar tarea del padre
+    props.addItem(newItem);
+    
+    // Limpiar los campos
+    setTitle("");
+    setDescription("");
+    setEndDate("");
   }
-  function handleChange(e) {
-    setItem(e.target.value);
-  }
+
   return (
     <div id="newinputform">
-    <form>
-      <input
-        id="newiteminput"
-        placeholder="New item"
-        type="text"
-        autoComplete="off"
-        value={item}
-        onChange={handleChange}
-        // No need to click on the "ADD" button to add a todo item. You
-        // can simply press "Enter":
-        onKeyDown={event => {
-          if (event.key === 'Enter') {
-            handleSubmit(event);
-          }
-        }}
-      />
-      <span>&nbsp;&nbsp;</span>
-      <Button
-        className="AddButton"
-        variant="contained"
-        disabled={props.isInserting}
-        onClick={!props.isInserting ? handleSubmit : null}
-        size="small"
-      >
-        {props.isInserting ? 'Adding…' : 'Add'}
-      </Button>
-    </form>
+      <form>
+        <input
+          id="titleInput"
+          placeholder="Task Title"
+          type="text"
+          autoComplete="off"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <br />
+        <textarea
+          id="descriptionInput"
+          placeholder="Description"
+          rows="3"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+        <br />
+        <input
+          id="endDateInput"
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+        />
+        <br />
+        <Button
+          className="AddButton"
+          variant="contained"
+          disabled={props.isInserting}
+          onClick={!props.isInserting ? handleSubmit : null}
+          size="small"
+        >
+          {props.isInserting ? 'Adding…' : 'Add'}
+        </Button>
+      </form>
     </div>
   );
 }

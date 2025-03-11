@@ -57,7 +57,8 @@ public class ToDoItemService {
         Optional<ToDoItem> toDoItemData = toDoItemRepository.findById(id);
         if (toDoItemData.isPresent()) {
             ToDoItem toDoItem = toDoItemData.get();
-            toDoItem.setId(id); // Asegurar que el ID se mantenga como Integer
+            toDoItem.setId(id); 
+            toDoItem.setTitle(td.getTitle());
             toDoItem.setCreation_ts(td.getCreation_ts());
             toDoItem.setDescription(td.getDescription());
             toDoItem.setDone(td.isDone());
