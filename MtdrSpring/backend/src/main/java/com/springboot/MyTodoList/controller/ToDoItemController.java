@@ -75,4 +75,10 @@ public class ToDoItemController {
                 new ResponseEntity<>("No se encontraron tareas con el estado: " + status, HttpStatus.NOT_FOUND) :
                 new ResponseEntity<>(items, HttpStatus.OK);
     }
+
+    @GetMapping("/all")
+    public List<ToDoItem> getAllRawToDoItems() {
+        return toDoItemService.getAllItemsIncludingInactive();
+    }
+
 }

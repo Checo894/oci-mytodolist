@@ -44,4 +44,17 @@ public class SubtaskController {
     public ResponseEntity<String> deleteSubtask(@PathVariable Long id) {
         return subtaskService.deleteSubtask(id);
     }
+
+    // ⚠️ Este método no está filtrado por isActive. Solo para uso administrativo.
+    @GetMapping("/all")
+    public List<Subtask> getAllRawSubtasks() {
+        return subtaskService.getAllSubtasksIncludingInactive();
+    }
+
+    @GetMapping("/developer/{developerId}")
+    public List<Subtask> getSubtasksByDeveloper(@PathVariable Long developerId) {
+        return subtaskService.getSubtasksByDeveloper(developerId);
+    }
+
+
 }

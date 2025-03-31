@@ -1,6 +1,6 @@
 package com.springboot.MyTodoList.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+// import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import java.time.OffsetDateTime;
@@ -36,6 +36,14 @@ public class ToDoItem {
     
     @Column(name = "STATUS", length = 50)
     private String status;
+
+    @ManyToOne
+    @JoinColumn(name = "SPRINT_ID")
+    private Sprint sprint;
+
+    @Column(name = "IS_ACTIVE", nullable = false)
+    private boolean isActive = true;
+
     
     @OneToMany(mappedBy = "mainTask", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore  // Evita serialización infinita
@@ -44,7 +52,7 @@ public class ToDoItem {
     public ToDoItem() {
     }
     
-    public ToDoItem(Long id, String title, String description, OffsetDateTime creation_ts, boolean done, OffsetDateTime startDate, OffsetDateTime endDate, double progress, String status) {
+    public ToDoItem(Long id, String title, String description, OffsetDateTime creation_ts, boolean done, OffsetDateTime startDate, OffsetDateTime endDate, double progress, String status, Sprint sprint, boolean isActive) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -54,7 +62,10 @@ public class ToDoItem {
         this.endDate = endDate;
         this.progress = Math.min(progress, 999.99); // Limitar el progreso al máximo permitido
         this.status = validateStatus(status);
+        this.sprint = sprint;
+        this.isActive = isActive;
     }
+    
     
     public Long getID() {
         return id;
@@ -135,6 +146,22 @@ public class ToDoItem {
     public void setSubtasks(List<Subtask> subtasks) {
         this.subtasks = subtasks;
     }
+
+    public Sprint getSprint() {
+        return sprint;
+    }
+    
+    public void setSprint(Sprint sprint) {
+        this.sprint = sprint;
+    }
+    
+    public boolean isActive() {
+        return isActive;
+    }
+    
+    public void setActive(boolean active) {
+        isActive = active;
+    }    
     
     private String validateStatus(String status) {
         List<String> validStatuses = List.of("Not Started", "In Progress", "Completed", "Cancelled", "Incomplete");
@@ -153,6 +180,9 @@ public class ToDoItem {
                 ", endDate=" + endDate +
                 ", progress=" + progress +
                 ", status='" + status + '\'' +
+                ", sprint=" + sprint +
+                ", isActive=" + isActive +
                 '}';
     }
+
 }

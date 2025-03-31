@@ -13,7 +13,7 @@ public class Subtask {
 
     @ManyToOne
     @JoinColumn(name = "MAIN_TASK_ID", nullable = false)
-    @JsonBackReference  // Evita la serialización infinita
+    @JsonBackReference
     private ToDoItem mainTask;
 
     @Column(length = 255, nullable = false)
@@ -24,15 +24,21 @@ public class Subtask {
     @Column(name = "ASSIGNED_DEVELOPER_ID")
     private Long assignedDeveloperId;
 
+    @Column(name = "IS_ACTIVE", nullable = false)
+    private boolean isActive = true;
+
     public Subtask() {}
 
-    public Subtask(Long id, ToDoItem mainTask, String title, boolean completed, Long assignedDeveloperId) {
+    public Subtask(Long id, ToDoItem mainTask, String title, boolean completed, Long assignedDeveloperId, boolean isActive) {
         this.id = id;
         this.mainTask = mainTask;
         this.title = title;
         this.completed = completed;
         this.assignedDeveloperId = assignedDeveloperId;
+        this.isActive = isActive;
     }
+
+    // Getters y Setters
 
     public Long getId() {
         return id;
@@ -74,6 +80,14 @@ public class Subtask {
         this.assignedDeveloperId = assignedDeveloperId;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
     @Override
     public String toString() {
         return "Subtask{" +
@@ -82,6 +96,7 @@ public class Subtask {
                 ", title='" + title + '\'' +
                 ", completed=" + completed +
                 ", assignedDeveloperId=" + assignedDeveloperId +
+                ", isActive=" + isActive +
                 '}';
     }
 }

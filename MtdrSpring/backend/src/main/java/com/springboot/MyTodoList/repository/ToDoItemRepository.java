@@ -12,9 +12,15 @@ import java.util.List;
 @Transactional
 @EnableTransactionManagement
 public interface ToDoItemRepository extends JpaRepository<ToDoItem, Long> {
-    
+
     List<ToDoItem> findByStatus(String status);
-    
+
     List<ToDoItem> findByProgressGreaterThanEqual(double progress);
-    
+
+    // 🔄 Nuevos métodos con isActive = true
+    List<ToDoItem> findByIsActiveTrue();
+
+    List<ToDoItem> findByStatusAndIsActiveTrue(String status);
+
+    List<ToDoItem> findByProgressGreaterThanEqualAndIsActiveTrue(double progress);
 }
