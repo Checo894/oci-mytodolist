@@ -38,4 +38,20 @@ public class DeveloperService {
         Developer developer = developerRepository.findByEmail(email);
         return developer != null ? developer.getRole() : null;
     }
+    
+    public Developer getByPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null) return null;
+    
+        // Quitar espacios, guiones, y asegurar que empiece con '+'
+        String normalized = phoneNumber.replaceAll("[^\\d+]", "");
+    
+        // En caso de que venga sin el "+"
+        if (!normalized.startsWith("+")) {
+            normalized = "+" + normalized;
+        }
+    
+        return developerRepository.findByPhoneNumber(normalized);
+    }
+    
+    
 }

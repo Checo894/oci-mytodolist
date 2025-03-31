@@ -2,7 +2,9 @@ package com.springboot.MyTodoList.controller;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -17,11 +19,16 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import com.springboot.MyTodoList.model.Developer;
 import com.springboot.MyTodoList.model.ToDoItem;
+import com.springboot.MyTodoList.model.Subtask;
+import com.springboot.MyTodoList.service.DeveloperService;
 import com.springboot.MyTodoList.service.ToDoItemService;
+import com.springboot.MyTodoList.service.SubtaskService;
 import com.springboot.MyTodoList.util.BotCommands;
 import com.springboot.MyTodoList.util.BotHelper;
 import com.springboot.MyTodoList.util.BotLabels;
@@ -32,17 +39,38 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	private static final Logger logger = LoggerFactory.getLogger(ToDoItemBotController.class);
 	private ToDoItemService toDoItemService;
 	private String botName;
+	private Map<Long, Long> chatSessionMap = new HashMap<>();
+	private SubtaskService subtaskService;
 
-	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService) {
+
+	private DeveloperService developerService;
+	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService, DeveloperService developerService, SubtaskService subtaskService) {
 		super(botToken);
-		logger.info("Bot Token: " + botToken);
-		logger.info("Bot name: " + botName);
 		this.toDoItemService = toDoItemService;
 		this.botName = botName;
+		this.developerService = developerService;
+		this.subtaskService = subtaskService;
 	}
+
+
 
 	@Override
 	public void onUpdateReceived(Update update) {
+		
+		if (update.hasMessage() && update.getMessage().hasContact()) {
+			Long chatId = update.getMessage().getChatId();
+			String phoneNumber = update.getMessage().getContact().getPhoneNumber();
+
+			Developer dev = developerService.getByPhoneNumber(phoneNumber);
+			if (dev != null) {
+				chatSessionMap.put(chatId, dev.getId());
+				BotHelper.sendMessageToTelegram(chatId, "✅ Sesión iniciada como: " + dev.getName(), this);
+			} else {
+				BotHelper.sendMessageToTelegram(chatId, "⚠️ No se encontró ningún developer con ese número.", this);
+			}
+			return;
+		}
+
 
 		if (update.hasMessage() && update.getMessage().hasText()) {
 
@@ -72,6 +100,18 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
 				keyboard.add(row);
 
+				// third row
+				KeyboardRow subtaskRow = new KeyboardRow();
+				subtaskRow.add(BotLabels.MY_SUBTASKS.getLabel());
+				keyboard.add(subtaskRow);
+
+				// fourth row
+				KeyboardRow phoneRow = new KeyboardRow();
+				KeyboardButton sharePhoneButton = new KeyboardButton(BotLabels.SHARE_PHONE.getLabel());
+				sharePhoneButton.setRequestContact(true);
+				phoneRow.add(sharePhoneButton);
+				keyboard.add(phoneRow);
+
 				// Set the keyboard
 				keyboardMarkup.setKeyboard(keyboard);
 
@@ -84,7 +124,36 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
-			} else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
+			}  else if (messageTextFromTelegram.equals(BotCommands.MY_SUBTASKS.getCommand())) {
+				
+				if (!chatSessionMap.containsKey(chatId)) {
+					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero comparte tu número para iniciar sesión.", this);
+					return;
+				}
+			
+				Long developerId = chatSessionMap.get(chatId);
+				List<Subtask> subtasks = subtaskService.getSubtasksByDeveloper(developerId);
+			
+				if (subtasks.isEmpty()) {
+					BotHelper.sendMessageToTelegram(chatId, "No tienes subtareas asignadas. 🎉", this);
+				} else {
+					StringBuilder sb = new StringBuilder("📋 *Tus Subtareas Activas:*\n\n");
+					for (Subtask s : subtasks) {
+						sb.append("🆔 ").append(s.getId())
+						  .append("\n📌 *").append(s.getTitle()).append("*")
+						  .append("\n✅ Completada: ").append(s.isCompleted() ? "Sí" : "No")
+						  .append("\n\n");
+					}
+					BotHelper.sendMarkdownMessageToTelegram(chatId, sb.toString(), this);
+				}
+
+			} else if (messageTextFromTelegram.equals(BotLabels.MY_SUBTASKS.getLabel())) {
+				// Simula comando /mis-subtareas
+				update.getMessage().setText(BotCommands.MY_SUBTASKS.getCommand());
+				onUpdateReceived(update);
+				return;
+				
+			}	else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
 				String done = messageTextFromTelegram.substring(0,
 						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));

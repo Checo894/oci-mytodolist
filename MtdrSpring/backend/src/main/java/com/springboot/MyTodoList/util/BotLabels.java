@@ -10,7 +10,12 @@ public enum BotLabels {
 	UNDO("UNDO"),
 	DELETE("DELETE"),
 	MY_TODO_LIST("MY TODO LIST"),
-	DASH("-");
+	DASH("-"),
+	GET_SUBTASKS_BY_PHONE("Get My Subtasks"),
+	SHARE_PHONE("📱 Share My Phone Number"),
+	MY_SUBTASKS("Ver Mis Subtareas");
+
+
 
 	private String label;
 

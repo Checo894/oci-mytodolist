@@ -29,5 +29,19 @@ public class BotHelper {
 			logger.error(e.getLocalizedMessage(), e);
 		}
 	}
-
+	public static void sendMarkdownMessageToTelegram(Long chatId, String text, TelegramLongPollingBot bot) {
+		try {
+			SendMessage messageToTelegram = new SendMessage();
+			messageToTelegram.setChatId(chatId);
+			messageToTelegram.setText(text);
+			messageToTelegram.setParseMode("Markdown");
+	
+			ReplyKeyboardRemove keyboardMarkup = new ReplyKeyboardRemove(true);
+			messageToTelegram.setReplyMarkup(keyboardMarkup);
+	
+			bot.execute(messageToTelegram);
+		} catch (Exception e) {
+			logger.error(e.getLocalizedMessage(), e);
+		}
+	}
 }
