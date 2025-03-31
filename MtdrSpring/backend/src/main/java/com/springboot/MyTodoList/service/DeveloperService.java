@@ -53,5 +53,26 @@ public class DeveloperService {
         return developerRepository.findByPhoneNumber(normalized);
     }
     
+    public Developer updateDeveloper(Long id, Developer updated) {
+        Optional<Developer> devOpt = developerRepository.findById(id);
+        if (devOpt.isPresent()) {
+            Developer dev = devOpt.get();
+            dev.setName(updated.getName());
+            dev.setPhoneNumber(updated.getPhoneNumber());
+            dev.setEmail(updated.getEmail());
+            dev.setRole(updated.getRole());
+            return developerRepository.save(dev);
+        }
+        return null;
+    }
+    
+    public boolean deleteDeveloper(Long id) {
+        Optional<Developer> devOpt = developerRepository.findById(id);
+        if (devOpt.isPresent()) {
+            developerRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
     
 }

@@ -54,6 +54,11 @@ public class SubtaskService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tarea principal no encontrada");
             }
 
+            if (subtask.getEstimatedHours() == null || subtask.getEstimatedHours() < 0 || subtask.getEstimatedHours() > 4) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("⚠️ Las horas estimadas deben estar entre 0.0 y 4.0");
+            }            
+
             subtask.setMainTask(mainTask.get());
             subtask.setActive(true); // 🔄 aseguramos que se cree como activa
             logger.info("Subtarea antes de guardarse: {}", subtask);
@@ -73,6 +78,12 @@ public class SubtaskService {
             subtask.setTitle(updatedSubtask.getTitle());
             subtask.setCompleted(updatedSubtask.isCompleted());
             subtask.setAssignedDeveloperId(updatedSubtask.getAssignedDeveloperId());
+            if (updatedSubtask.isCompleted()) {
+                if (updatedSubtask.getActualHours() == null || updatedSubtask.getActualHours() <= 0) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+                }
+                subtask.setActualHours(updatedSubtask.getActualHours());
+            }
             return new ResponseEntity<>(subtaskRepository.save(subtask), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

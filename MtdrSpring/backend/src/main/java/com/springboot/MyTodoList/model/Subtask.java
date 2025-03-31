@@ -27,15 +27,23 @@ public class Subtask {
     @Column(name = "IS_ACTIVE", nullable = false)
     private boolean isActive = true;
 
+    @Column(name = "ESTIMATED_HOURS")
+    private Double estimatedHours;
+
+    @Column(name = "ACTUAL_HOURS")
+    private Double actualHours;
+
     public Subtask() {}
 
-    public Subtask(Long id, ToDoItem mainTask, String title, boolean completed, Long assignedDeveloperId, boolean isActive) {
+    public Subtask(Long id, ToDoItem mainTask, String title, boolean completed, Long assignedDeveloperId, boolean isActive, Double estimatedHours, Double actualHours) {
         this.id = id;
         this.mainTask = mainTask;
         this.title = title;
         this.completed = completed;
         this.assignedDeveloperId = assignedDeveloperId;
         this.isActive = isActive;
+        this.estimatedHours = estimatedHours;
+        this.actualHours = actualHours;
     }
 
     // Getters y Setters
@@ -88,6 +96,22 @@ public class Subtask {
         isActive = active;
     }
 
+    public Double getEstimatedHours() {
+        return estimatedHours;
+    }
+
+    public void setEstimatedHours(Double estimatedHours) {
+        this.estimatedHours = estimatedHours;
+    }
+
+    public Double getActualHours() {
+        return actualHours;
+    }
+    
+    public void setActualHours(Double actualHours) {
+        this.actualHours = actualHours;
+    }
+
     @Override
     public String toString() {
         return "Subtask{" +
@@ -97,6 +121,8 @@ public class Subtask {
                 ", completed=" + completed +
                 ", assignedDeveloperId=" + assignedDeveloperId +
                 ", isActive=" + isActive +
+                ", estimatedHours=" + estimatedHours +
+                ", actualHours=" + actualHours +
                 '}';
     }
 }
