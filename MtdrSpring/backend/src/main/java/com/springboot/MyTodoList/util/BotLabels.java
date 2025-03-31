@@ -13,6 +13,9 @@ public enum BotLabels {
 	DASH("-"),
 	GET_SUBTASKS_BY_PHONE("Get My Subtasks"),
 	SHARE_PHONE("📱 Share My Phone Number"),
+	CREATE_TASK("🆕 Crear Tarea"),
+	ASSIGN_TO_SPRINT("📌 Asignar Tarea a Sprint"),
+	VIEW_SPRINT_TASKS("📋 Ver Tareas por Sprint"),
 	MY_SUBTASKS("Ver Mis Subtareas");
 
 
