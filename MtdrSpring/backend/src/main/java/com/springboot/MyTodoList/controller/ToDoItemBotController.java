@@ -1,5 +1,6 @@
 package com.springboot.MyTodoList.controller;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import com.springboot.MyTodoList.util.BotHelper;
 import com.springboot.MyTodoList.util.BotLabels;
 import com.springboot.MyTodoList.util.BotMessages;
 import com.springboot.MyTodoList.util.SprintAssignmentSession;
+import com.springboot.MyTodoList.util.SprintCreationSession;
 import com.springboot.MyTodoList.util.TaskCreationSession;
 
 
@@ -51,8 +53,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	private SprintService sprintService;
 	private Map<Long, SprintAssignmentSession> sprintAssignmentMap = new HashMap<>();
 	private Map<Long, String> stateMap = new HashMap<>();
-
-
+	private Map<Long, SprintCreationSession> sprintSessionMap = new HashMap<>();
 
 
 	private DeveloperService developerService;
@@ -77,8 +78,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			if (dev != null) {
 				chatSessionMap.put(chatId, dev.getId());
 				BotHelper.sendMessageToTelegram(chatId, "✅ Sesión iniciada como: " + dev.getName(), this);
+				BotHelper.showMainMenu(chatId, this);
 			} else {
 				BotHelper.sendMessageToTelegram(chatId, "⚠️ No se encontró ningún developer con ese número.", this);
+				BotHelper.showMainMenu(chatId, this);
 			}
 			return;
 		}
@@ -99,18 +102,18 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
 				List<KeyboardRow> keyboard = new ArrayList<>();
 
-				// first row
+				// // first row
 				KeyboardRow row = new KeyboardRow();
-				row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-				row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-				// Add the first row to the keyboard
-				keyboard.add(row);
+				// row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+				// row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+				// // Add the first row to the keyboard
+				// keyboard.add(row);
 
 				// second row
 				row = new KeyboardRow();
 				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-				keyboard.add(row);
+				// row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+				// keyboard.add(row);
 
 				// third row
 				KeyboardRow subtaskRow = new KeyboardRow();
@@ -121,6 +124,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				taskRow.add(BotLabels.CREATE_TASK.getLabel());
 				keyboard.add(taskRow);
 
+				KeyboardRow sprintRow = new KeyboardRow();
+				sprintRow.add(BotLabels.CREATE_SPRINT.getLabel());
+				keyboard.add(sprintRow);
+
 				KeyboardRow assignRow = new KeyboardRow();
 				assignRow.add(BotLabels.ASSIGN_TO_SPRINT.getLabel());
 				keyboard.add(assignRow);
@@ -128,6 +135,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				KeyboardRow viewSprintRow = new KeyboardRow();
 				viewSprintRow.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
 				keyboard.add(viewSprintRow);
+
+				KeyboardRow devRow = new KeyboardRow();
+				devRow.add(BotLabels.VIEW_DEVELOPERS.getLabel());
+				keyboard.add(devRow);
+
 
 				// fourth row
 				KeyboardRow phoneRow = new KeyboardRow();
@@ -148,23 +160,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					logger.error(e.getLocalizedMessage(), e);
 				}
 
-			}   else if (messageTextFromTelegram.contains(" - Completar")) {
-
-				try {
-					String[] parts = messageTextFromTelegram.split(" - ");
-					Long subtaskId = Long.valueOf(parts[0].trim());
-
-					pendingCompletionMap.put(chatId, subtaskId);
-					BotHelper.sendMessageToTelegram(chatId, "¿Cuántas horas reales te tomó completar esta subtarea? (Ejemplo: 2.5)", this);
-				} catch (Exception e) {
-					logger.error("Error al interpretar la solicitud de completar subtarea", e);
-					BotHelper.sendMessageToTelegram(chatId, "⚠️ No pude identificar el ID de la subtarea. Intenta de nuevo.", this);
-				}
-				
 			} else if (messageTextFromTelegram.equals(BotCommands.MY_SUBTASKS.getCommand())) {
 				
 				if (!chatSessionMap.containsKey(chatId)) {
 					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero comparte tu número para iniciar sesión.", this);
+					BotHelper.showMainMenu(chatId, this);
 					return;
 				}
 			
@@ -184,9 +184,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					for (Subtask s : subtasks) {
 						KeyboardRow row = new KeyboardRow();
 						row.add(s.getTitle());
-						row.add(s.getId() + " - Completar");
+						String action = s.isCompleted() ? "Descompletar" : "Completar";
+						row.add(s.getId() + " - " + action);
 						keyboard.add(row);
 					}
+					
 			
 					KeyboardRow volver = new KeyboardRow();
 					volver.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
@@ -207,10 +209,140 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				onUpdateReceived(update);
 				return;
 
+			}  else if (messageTextFromTelegram.matches("^\\d+ - (Completar|Descompletar)$")) {
+				
+				String[] parts = messageTextFromTelegram.split(" - ");
+				Long subtaskId = Long.parseLong(parts[0]);
+				boolean markAsDone = parts[1].equalsIgnoreCase("Completar");
+			
+				Subtask subtask = subtaskService.getSubtaskById(subtaskId).getBody();
+				if (subtask == null || !subtask.getAssignedDeveloperId().equals(chatSessionMap.get(chatId))) {
+					BotHelper.sendMessageToTelegram(chatId, "❌ No tienes acceso a esta subtarea.", this);
+					return;
+				}
+			
+				if (markAsDone) {
+					// si la marcamos como completada, preguntar por actualHours como ya tienes
+					pendingCompletionMap.put(chatId, subtaskId);
+					BotHelper.sendMessageToTelegram(chatId, "🕒 ¿Cuántas horas reales tomó esta subtarea?", this);
+				} else {
+					subtask.setCompleted(false);
+					subtask.setActualHours(null);
+					subtaskService.updateSubtask(subtaskId, subtask);
+					BotHelper.sendMessageToTelegram(chatId, "↩️ Subtarea marcada como *no completada*.", this);
+					BotHelper.showMainMenu(chatId, this);
+				}
+			} else if (subtaskService.existsByTitle(messageTextFromTelegram.trim())) {
+				
+				String title = messageTextFromTelegram.trim();
+			
+				Subtask s = subtaskService.getByTitleAndDeveloper(title, chatSessionMap.get(chatId));
+				if (s == null) {
+					BotHelper.sendMessageToTelegram(chatId, "❌ No se encontró la subtarea o no está asignada a ti.", this);
+					return;
+				}
+			
+				ToDoItem task = s.getMainTask();
+				Sprint sprint = task.getSprint();
+			
+				StringBuilder msg = new StringBuilder("📄 *Detalles de la Subtarea:*\n\n");
+			
+				msg.append("🔹 *Título:* ").append(s.getTitle()).append("\n");
+				msg.append("⏱️ *Horas estimadas:* ").append(s.getEstimatedHours()).append("\n\n");
+			
+				msg.append("🗂 *Tarea Principal:*\n");
+				msg.append("• Título: ").append(task.getTitle()).append("\n");
+				msg.append("• Descripción: ").append(task.getDescription() == null ? "Ninguna" : task.getDescription()).append("\n");
+			
+				if (sprint != null) {
+					msg.append("📆 *Sprint:*\n");
+					msg.append("• Número: ").append(sprint.getSprintNumber()).append("\n");
+					msg.append("• ID: ").append(sprint.getId()).append("\n");
+					msg.append("• Fechas: ").append(sprint.getStartDate()).append(" ➡ ").append(sprint.getEndDate()).append("\n");
+				} else {
+					msg.append("📆 *Sprint:* Ninguno\n");
+				}
+			
+				BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
+				BotHelper.showMainMenu(chatId, this);
+			} else if (messageTextFromTelegram.equals(BotLabels.CREATE_SPRINT.getLabel())) {
+				update.getMessage().setText("/crear-sprint");
+				onUpdateReceived(update);
+				return;
+			} else if (messageTextFromTelegram.equals("/crear-sprint")) {
+							
+				if (!chatSessionMap.containsKey(chatId)) {
+					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero comparte tu número para iniciar sesión.", this);
+					BotHelper.showMainMenu(chatId, this);
+					return;
+				}
+			
+				Long devId = chatSessionMap.get(chatId);
+				Developer dev = developerService.getById(devId).orElse(null);
+				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
+					BotHelper.sendMessageToTelegram(chatId, "❌ Solo los Project Managers pueden crear sprints.", this);
+					return;
+				}
+			
+				SprintCreationSession session = new SprintCreationSession();
+				session.state = SprintCreationSession.State.WAITING_NUMBER;
+				sprintSessionMap.put(chatId, session);
+			
+				BotHelper.sendMessageToTelegram(chatId, "📌 ¿Cuál es el número del sprint?", this);
+			} else if (sprintSessionMap.containsKey(chatId)) {
+				SprintCreationSession session = sprintSessionMap.get(chatId);
+				String input = messageTextFromTelegram.trim();
+
+				switch (session.state) {
+					case WAITING_NUMBER:
+						try {
+							session.sprintNumber = Integer.parseInt(input);
+							session.state = SprintCreationSession.State.WAITING_START_DATE;
+							BotHelper.sendMessageToTelegram(chatId, "📅 Ingresa la *fecha de inicio* (YYYY-MM-DD):", this);
+						} catch (NumberFormatException e) {
+							BotHelper.sendMessageToTelegram(chatId, "❌ Número inválido. Intenta de nuevo.", this);
+						}
+						break;
+
+					case WAITING_START_DATE:
+						try {
+							session.startDate = LocalDate.parse(input);
+							session.state = SprintCreationSession.State.WAITING_END_DATE;
+							BotHelper.sendMessageToTelegram(chatId, "📅 Ingresa la *fecha de fin* (YYYY-MM-DD):", this);
+						} catch (Exception e) {
+							BotHelper.sendMessageToTelegram(chatId, "❌ Fecha inválida. Usa el formato YYYY-MM-DD.", this);
+						}
+						break;
+
+					case WAITING_END_DATE:
+						try {
+							session.endDate = LocalDate.parse(input);
+
+							if (!session.endDate.isAfter(session.startDate)) {
+								BotHelper.sendMessageToTelegram(chatId, "⚠️ La fecha de fin debe ser posterior a la de inicio.", this);
+								return;
+							}
+
+							Sprint sprint = new Sprint();
+							sprint.setSprintNumber(session.sprintNumber);
+							sprint.setStartDate(session.startDate);
+							sprint.setEndDate(session.endDate);
+
+							Sprint created = sprintService.createSprint(sprint);
+							BotHelper.sendMessageToTelegram(chatId, "✅ Sprint #" + created.getSprintNumber() + " creado con éxito.", this);
+						} catch (Exception e) {
+							BotHelper.sendMessageToTelegram(chatId, "❌ Error al crear el sprint.", this);
+						} finally {
+							sprintSessionMap.remove(chatId);
+							BotHelper.showMainMenu(chatId, this);
+						}
+						break;
+				}
 			} else if (messageTextFromTelegram.equals("/asignar-sprint")) {
 			
 				if (!chatSessionMap.containsKey(chatId)) {
 					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero debes compartir tu número.", this);
+					BotHelper.showMainMenu(chatId, this);
 					return;
 				}
 			
@@ -265,156 +397,197 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
 				// Guardar que este chat está esperando input de sprintId
 				stateMap.put(chatId, "WAITING_SPRINT_ID_FOR_VIEW");
+			} else if (messageTextFromTelegram.equals("/ver-developers")) {
+			
+				if (!chatSessionMap.containsKey(chatId)) {
+					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero comparte tu número para iniciar sesión.", this);
+					BotHelper.showMainMenu(chatId, this);
+					return;
+				}
+			
+				Long devId = chatSessionMap.get(chatId);
+				Developer dev = developerService.getById(devId).orElse(null);
+			
+				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
+					BotHelper.sendMessageToTelegram(chatId, "❌ Solo los Project Managers pueden ver esta información.", this);
+					return;
+				}
+			
+				List<Developer> devs = developerService.getAll();
+				if (devs.isEmpty()) {
+					BotHelper.sendMessageToTelegram(chatId, "📭 No hay developers registrados.", this);
+				} else {
+					StringBuilder msg = new StringBuilder("🧑‍💻 *Desarrolladores registrados:*\n\n");
+					for (Developer d : devs) {
+						msg.append("🆔 ").append(d.getId())
+						   .append(" – ").append(d.getName())
+						   .append("\n");
+					}
+					BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
+				}
+			
+				BotHelper.showMainMenu(chatId, this);
+			} else if (messageTextFromTelegram.equals(BotLabels.VIEW_DEVELOPERS.getLabel())) {
+				update.getMessage().setText("/ver-developers");
+				onUpdateReceived(update);
+				return;
 			}
 			
 			
-				else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
+			
+			
+				// else if (messageTextFromTelegram.indexOf(BotLabels.DONE.getLabel()) != -1) {
 
-				String done = messageTextFromTelegram.substring(0,
-						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
-				Long id = Long.valueOf(done);
+				// String done = messageTextFromTelegram.substring(0,
+				// 		messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
+				// Long id = Long.valueOf(done);
 
-				try {
+				// try {
 
-					ToDoItem item = getToDoItemById(id).getBody();
-					item.setDone(true);
-					updateToDoItem(item, id);
-					BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_DONE.getMessage(), this);
+				// 	ToDoItem item = getToDoItemById(id).getBody();
+				// 	item.setDone(true);
+				// 	updateToDoItem(item, id);
+				// 	BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_DONE.getMessage(), this);
 
-				} catch (Exception e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+				// } catch (Exception e) {
+				// 	logger.error(e.getLocalizedMessage(), e);
+				// }
 
-			} else if (messageTextFromTelegram.indexOf(BotLabels.UNDO.getLabel()) != -1) {
+			// } else if (messageTextFromTelegram.indexOf(BotLabels.UNDO.getLabel()) != -1) {
 
-				String undo = messageTextFromTelegram.substring(0,
-						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
-				Long id = Long.valueOf(undo);
+			// 	String undo = messageTextFromTelegram.substring(0,
+			// 			messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
+			// 	Long id = Long.valueOf(undo);
 
-				try {
+			// 	try {
 
-					ToDoItem item = getToDoItemById(id).getBody();
-					item.setDone(false);
-					updateToDoItem(item, id);
-					BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_UNDONE.getMessage(), this);
+			// 		ToDoItem item = getToDoItemById(id).getBody();
+			// 		item.setDone(false);
+			// 		updateToDoItem(item, id);
+			// 		BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_UNDONE.getMessage(), this);
 
-				} catch (Exception e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+			// 	} catch (Exception e) {
+			// 		logger.error(e.getLocalizedMessage(), e);
+			// 	}
 
-			} else if (messageTextFromTelegram.indexOf(BotLabels.DELETE.getLabel()) != -1) {
+			// } else if (messageTextFromTelegram.indexOf(BotLabels.DELETE.getLabel()) != -1) {
 
-				String delete = messageTextFromTelegram.substring(0,
-						messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
-				Long id = Long.valueOf(delete);
+			// 	String delete = messageTextFromTelegram.substring(0,
+			// 			messageTextFromTelegram.indexOf(BotLabels.DASH.getLabel()));
+			// 	Long id = Long.valueOf(delete);
 
-				try {
+			// 	try {
 
-					deleteToDoItem(id).getBody();
-					BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_DELETED.getMessage(), this);
+			// 		deleteToDoItem(id).getBody();
+			// 		BotHelper.sendMessageToTelegram(chatId, BotMessages.ITEM_DELETED.getMessage(), this);
 
-				} catch (Exception e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+			// 	} catch (Exception e) {
+			// 		logger.error(e.getLocalizedMessage(), e);
+			// 	}
 
-			}  else if (messageTextFromTelegram.equals(BotLabels.CREATE_TASK.getLabel())) {
+			// }  
+			else if (messageTextFromTelegram.equals(BotLabels.CREATE_TASK.getLabel())) {
 				update.getMessage().setText("/crear-tarea");
 				onUpdateReceived(update);
+				BotHelper.showMainMenu(chatId, this);
 				return;
 			} else if (messageTextFromTelegram.equals(BotLabels.ASSIGN_TO_SPRINT.getLabel())) {
 				update.getMessage().setText("/asignar-sprint");
 				onUpdateReceived(update);
+				BotHelper.showMainMenu(chatId, this);
 				return;
 			} else if (messageTextFromTelegram.equals(BotLabels.VIEW_SPRINT_TASKS.getLabel())) {
 				update.getMessage().setText("/ver-sprint");
 				onUpdateReceived(update);
+				
 				return;
 			}
 			
-			else if (messageTextFromTelegram.equals(BotCommands.HIDE_COMMAND.getCommand())
-					|| messageTextFromTelegram.equals(BotLabels.HIDE_MAIN_SCREEN.getLabel())) {
+			// else if (messageTextFromTelegram.equals(BotCommands.HIDE_COMMAND.getCommand())
+			// 		|| messageTextFromTelegram.equals(BotLabels.HIDE_MAIN_SCREEN.getLabel())) {
 
-				BotHelper.sendMessageToTelegram(chatId, BotMessages.BYE.getMessage(), this);
+			// 	BotHelper.sendMessageToTelegram(chatId, BotMessages.BYE.getMessage(), this);
 
-			} else if (messageTextFromTelegram.equals(BotCommands.TODO_LIST.getCommand())
-					|| messageTextFromTelegram.equals(BotLabels.LIST_ALL_ITEMS.getLabel())
-					|| messageTextFromTelegram.equals(BotLabels.MY_TODO_LIST.getLabel())) {
+			// } else if (messageTextFromTelegram.equals(BotCommands.TODO_LIST.getCommand())
+			// 		|| messageTextFromTelegram.equals(BotLabels.LIST_ALL_ITEMS.getLabel())
+			// 		|| messageTextFromTelegram.equals(BotLabels.MY_TODO_LIST.getLabel())) {
 
-				List<ToDoItem> allItems = getAllToDoItems();
-				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-				List<KeyboardRow> keyboard = new ArrayList<>();
+			// 	List<ToDoItem> allItems = getAllToDoItems();
+			// 	ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+			// 	List<KeyboardRow> keyboard = new ArrayList<>();
 
-				// command back to main screen
-				KeyboardRow mainScreenRowTop = new KeyboardRow();
-				mainScreenRowTop.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				keyboard.add(mainScreenRowTop);
+			// 	// command back to main screen
+			// 	KeyboardRow mainScreenRowTop = new KeyboardRow();
+			// 	mainScreenRowTop.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+			// 	keyboard.add(mainScreenRowTop);
 
-				KeyboardRow firstRow = new KeyboardRow();
-				firstRow.add(BotLabels.ADD_NEW_ITEM.getLabel());
-				keyboard.add(firstRow);
+			// 	KeyboardRow firstRow = new KeyboardRow();
+			// 	firstRow.add(BotLabels.ADD_NEW_ITEM.getLabel());
+			// 	keyboard.add(firstRow);
 
-				KeyboardRow myTodoListTitleRow = new KeyboardRow();
-				myTodoListTitleRow.add(BotLabels.MY_TODO_LIST.getLabel());
-				keyboard.add(myTodoListTitleRow);
+			// 	KeyboardRow myTodoListTitleRow = new KeyboardRow();
+			// 	myTodoListTitleRow.add(BotLabels.MY_TODO_LIST.getLabel());
+			// 	keyboard.add(myTodoListTitleRow);
 
-				List<ToDoItem> activeItems = allItems.stream().filter(item -> item.isDone() == false)
-						.collect(Collectors.toList());
+			// 	List<ToDoItem> activeItems = allItems.stream().filter(item -> item.isDone() == false)
+			// 			.collect(Collectors.toList());
 
-				for (ToDoItem item : activeItems) {
+			// 	for (ToDoItem item : activeItems) {
 
-					KeyboardRow currentRow = new KeyboardRow();
-					currentRow.add(item.getDescription());
-					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
-					keyboard.add(currentRow);
-				}
+			// 		KeyboardRow currentRow = new KeyboardRow();
+			// 		currentRow.add(item.getDescription());
+			// 		currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DONE.getLabel());
+			// 		keyboard.add(currentRow);
+			// 	}
 
-				List<ToDoItem> doneItems = allItems.stream().filter(item -> item.isDone() == true)
-						.collect(Collectors.toList());
+			// 	List<ToDoItem> doneItems = allItems.stream().filter(item -> item.isDone() == true)
+			// 			.collect(Collectors.toList());
 
-				for (ToDoItem item : doneItems) {
-					KeyboardRow currentRow = new KeyboardRow();
-					currentRow.add(item.getDescription());
-					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
-					currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
-					keyboard.add(currentRow);
-				}
+			// 	for (ToDoItem item : doneItems) {
+			// 		KeyboardRow currentRow = new KeyboardRow();
+			// 		currentRow.add(item.getDescription());
+			// 		currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.UNDO.getLabel());
+			// 		currentRow.add(item.getID() + BotLabels.DASH.getLabel() + BotLabels.DELETE.getLabel());
+			// 		keyboard.add(currentRow);
+			// 	}
 
-				// command back to main screen
-				KeyboardRow mainScreenRowBottom = new KeyboardRow();
-				mainScreenRowBottom.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				keyboard.add(mainScreenRowBottom);
+			// 	// command back to main screen
+			// 	KeyboardRow mainScreenRowBottom = new KeyboardRow();
+			// 	mainScreenRowBottom.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+			// 	keyboard.add(mainScreenRowBottom);
 
-				keyboardMarkup.setKeyboard(keyboard);
+			// 	keyboardMarkup.setKeyboard(keyboard);
 
-				SendMessage messageToTelegram = new SendMessage();
-				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText(BotLabels.MY_TODO_LIST.getLabel());
-				messageToTelegram.setReplyMarkup(keyboardMarkup);
+			// 	SendMessage messageToTelegram = new SendMessage();
+			// 	messageToTelegram.setChatId(chatId);
+			// 	messageToTelegram.setText(BotLabels.MY_TODO_LIST.getLabel());
+			// 	messageToTelegram.setReplyMarkup(keyboardMarkup);
 
-				try {
-					execute(messageToTelegram);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+			// 	try {
+			// 		execute(messageToTelegram);
+			// 	} catch (TelegramApiException e) {
+			// 		logger.error(e.getLocalizedMessage(), e);
+			// 	}
 
-			} else if (messageTextFromTelegram.equals(BotCommands.ADD_ITEM.getCommand())
-					|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_ITEM.getLabel())) {
-				try {
-					SendMessage messageToTelegram = new SendMessage();
-					messageToTelegram.setChatId(chatId);
-					messageToTelegram.setText(BotMessages.TYPE_NEW_TODO_ITEM.getMessage());
-					// hide keyboard
-					ReplyKeyboardRemove keyboardMarkup = new ReplyKeyboardRemove(true);
-					messageToTelegram.setReplyMarkup(keyboardMarkup);
+			// } else if (messageTextFromTelegram.equals(BotCommands.ADD_ITEM.getCommand())
+			// 		|| messageTextFromTelegram.equals(BotLabels.ADD_NEW_ITEM.getLabel())) {
+			// 	try {
+			// 		SendMessage messageToTelegram = new SendMessage();
+			// 		messageToTelegram.setChatId(chatId);
+			// 		messageToTelegram.setText(BotMessages.TYPE_NEW_TODO_ITEM.getMessage());
+			// 		// hide keyboard
+			// 		ReplyKeyboardRemove keyboardMarkup = new ReplyKeyboardRemove(true);
+			// 		messageToTelegram.setReplyMarkup(keyboardMarkup);
 
-					// send message
-					execute(messageToTelegram);
+			// 		// send message
+			// 		execute(messageToTelegram);
 
-				} catch (Exception e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+			// 	} catch (Exception e) {
+			// 		logger.error(e.getLocalizedMessage(), e);
+			// 	}
 
-			} else if (pendingCompletionMap.containsKey(chatId)) {
+			// } 
+			else if (pendingCompletionMap.containsKey(chatId)) {
 				try {
 					Double actualHours = Double.parseDouble(messageTextFromTelegram.replace(",", "."));
 					Long subtaskId = pendingCompletionMap.get(chatId);
@@ -434,11 +607,11 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						}
 
 						subtaskService.updateSubtask(subtaskId, subtask);
-
 			
 						BotHelper.sendMessageToTelegram(chatId, "✅ Subtarea marcada como completada en " + actualHours + " horas.", this);
 					} else {
 						BotHelper.sendMessageToTelegram(chatId, "❌ No se encontró la subtarea.", this);
+						BotHelper.showMainMenu(chatId, this);
 					}
 			
 				} catch (NumberFormatException e) {
@@ -448,6 +621,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					BotHelper.sendMessageToTelegram(chatId, "❌ Ocurrió un error al guardar la subtarea.", this);
 				} finally {
 					pendingCompletionMap.remove(chatId); // limpiar sesión
+					BotHelper.showMainMenu(chatId, this); // Mostrar menú principal
 				}
 				
 			} else if (messageTextFromTelegram.equals("/crear-tarea")) {
@@ -567,6 +741,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
                 BotHelper.sendMessageToTelegram(chatId, "✅ Tarea creada con " + session.subtasks.size() + " subtareas.", this);
                 taskSessionMap.remove(chatId);
+				BotHelper.showMainMenu(chatId, this);
             }
             break;
     }
@@ -602,6 +777,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                 if (task == null) {
                     BotHelper.sendMessageToTelegram(chatId, "❌ La tarea ya no existe.", this);
                     sprintAssignmentMap.remove(chatId);
+					BotHelper.showMainMenu(chatId, this);
                     return;
                 }
 
@@ -615,11 +791,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
                     BotHelper.sendMessageToTelegram(chatId, "✅ Tarea asignada al sprint correctamente.", this);
                 } else {
                     BotHelper.sendMessageToTelegram(chatId, "❌ Falló la actualización de la tarea.", this);
+					BotHelper.showMainMenu(chatId, this);
                 }
             } catch (NumberFormatException e) {
                 BotHelper.sendMessageToTelegram(chatId, "❌ ID de sprint inválido.", this);
             }
             sprintAssignmentMap.remove(chatId);
+			BotHelper.showMainMenu(chatId, this);
             break;
     }
 } else if (stateMap.getOrDefault(chatId, "").equals("WAITING_SPRINT_ID_FOR_VIEW")) {
@@ -647,6 +825,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
     }
 
     stateMap.remove(chatId); // Limpiar estado
+	BotHelper.showMainMenu(chatId, this);
 }
 
 

@@ -7,6 +7,7 @@ import com.springboot.MyTodoList.util.HashUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -73,6 +74,10 @@ public class DeveloperService {
             return true;
         }
         return false;
+    }
+
+    public List<Developer> getAll() {
+        return developerRepository.findAll();
     }
     
 }

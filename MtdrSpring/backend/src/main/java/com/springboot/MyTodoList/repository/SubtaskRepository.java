@@ -26,4 +26,9 @@ public interface SubtaskRepository extends JpaRepository<Subtask, Long> {
 
     List<Subtask> findByAssignedDeveloperIdAndIsActiveTrue(Long developerId);
 
+    List<Subtask> findByTitle(String title);
+
+    List<Subtask> findByTitleAndAssignedDeveloperId(String title, Long developerId);
+
+
 }

@@ -108,5 +108,17 @@ public class SubtaskService {
     public List<Subtask> getSubtasksByDeveloper(Long developerId) {
         return subtaskRepository.findByAssignedDeveloperIdAndIsActiveTrue(developerId);
     }
+
+    public boolean existsByTitle(String title) {
+        return subtaskRepository.findByTitle(title).size() > 0;
+    }
+    
+    public Subtask getByTitleAndDeveloper(String title, Long developerId) {
+        return subtaskRepository.findByTitleAndAssignedDeveloperId(title, developerId)
+                                .stream()
+                                .findFirst()
+                                .orElse(null);
+    }
+    
     
 }
