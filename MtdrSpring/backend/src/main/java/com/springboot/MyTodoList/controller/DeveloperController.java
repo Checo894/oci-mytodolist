@@ -18,6 +18,11 @@ public class DeveloperController {
     @Autowired
     private DeveloperService developerService;
 
+    @GetMapping
+    public ResponseEntity<?> getAllDevelopers() {
+        return ResponseEntity.ok(developerService.getAll());
+    }
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Developer developer) {
         Developer created = developerService.createDeveloper(developer);
