@@ -1,12 +1,19 @@
 package com.springboot.MyTodoList.controller;
 
+import com.springboot.MyTodoList.dto.SubtaskDetailDTO;
+import com.springboot.MyTodoList.model.Sprint;
 import com.springboot.MyTodoList.model.Subtask;
+import com.springboot.MyTodoList.model.ToDoItem;
+import com.springboot.MyTodoList.repository.SubtaskRepository;
 import com.springboot.MyTodoList.service.SubtaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/subtasks")
@@ -14,6 +21,10 @@ public class SubtaskController {
 
     @Autowired
     private SubtaskService subtaskService;
+
+    @Autowired
+    private SubtaskRepository subtaskRepository;
+
 
     @GetMapping
     public List<Subtask> getAllSubtasks() {
@@ -56,5 +67,40 @@ public class SubtaskController {
         return subtaskService.getSubtasksByDeveloper(developerId);
     }
 
+    @GetMapping("/{id}/details")
+    public ResponseEntity<?> getSubtaskDetails(@PathVariable Long id) {
+        Optional<Subtask> opt = subtaskRepository.findById(id);
+
+        if (opt.isEmpty() || !opt.get().isActive()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Subtarea no encontrada o desactivada"));
+        }
+
+        Subtask s = opt.get();
+        ToDoItem task = s.getMainTask();
+
+        SubtaskDetailDTO dto = new SubtaskDetailDTO();
+        dto.id = s.getId();
+        dto.title = s.getTitle();
+        dto.estimatedHours = s.getEstimatedHours();
+
+        SubtaskDetailDTO.TaskInfo taskInfo = new SubtaskDetailDTO.TaskInfo();
+        taskInfo.title = task.getTitle();
+        taskInfo.description = task.getDescription();
+
+        if (task.getSprint() != null) {
+            Sprint sprint = task.getSprint();
+            SubtaskDetailDTO.SprintInfo sprintInfo = new SubtaskDetailDTO.SprintInfo();
+            sprintInfo.id = sprint.getId();
+            sprintInfo.sprintNumber = sprint.getSprintNumber();
+            sprintInfo.startDate = sprint.getStartDate();
+            sprintInfo.endDate = sprint.getEndDate();
+            taskInfo.sprint = sprintInfo;
+        }
+
+        dto.task = taskInfo;
+
+        return ResponseEntity.ok(dto);
+    }
 
 }

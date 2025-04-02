@@ -2,6 +2,10 @@ package com.springboot.MyTodoList.controller;
 
 import com.springboot.MyTodoList.model.Developer;
 import com.springboot.MyTodoList.service.DeveloperService;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -26,13 +30,25 @@ public class DeveloperController {
                 loginRequest.getEmail(),
                 loginRequest.getPasswordHash()
         );
+
         if (valid) {
-            String role = developerService.getRoleByEmail(loginRequest.getEmail());
-            return ResponseEntity.ok("Login correcto. Rol: " + role);
+            Developer dev = developerService.getByEmail(loginRequest.getEmail());
+            if (dev == null) {
+                return ResponseEntity.status(404).body("Usuario no encontrado");
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Login correcto");
+            response.put("role", dev.getRole());
+            response.put("developerId", dev.getId());
+            response.put("name", dev.getName());
+
+            return ResponseEntity.ok(response);
         } else {
-            return ResponseEntity.status(401).body("Credenciales incorrectas");
+            return ResponseEntity.status(401).body(Map.of("message", "Credenciales incorrectas"));
         }
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getDeveloperById(@PathVariable Long id) {
