@@ -23,4 +23,7 @@ public interface ToDoItemRepository extends JpaRepository<ToDoItem, Long> {
     List<ToDoItem> findByStatusAndIsActiveTrue(String status);
 
     List<ToDoItem> findByProgressGreaterThanEqualAndIsActiveTrue(double progress);
+
+    List<ToDoItem> findBySprintId(Long sprintId);
+
 }

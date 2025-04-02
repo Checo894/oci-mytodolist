@@ -218,6 +218,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Subtask subtask = subtaskService.getSubtaskById(subtaskId).getBody();
 				if (subtask == null || !subtask.getAssignedDeveloperId().equals(chatSessionMap.get(chatId))) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ No tienes acceso a esta subtarea.", this);
+					BotHelper.showMainMenu(chatId, this);
 					return;
 				}
 			
@@ -232,13 +233,21 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					BotHelper.sendMessageToTelegram(chatId, "↩️ Subtarea marcada como *no completada*.", this);
 					BotHelper.showMainMenu(chatId, this);
 				}
-			} else if (subtaskService.existsByTitle(messageTextFromTelegram.trim())) {
+			} else if (
+				!taskSessionMap.containsKey(chatId) &&
+				!sprintAssignmentMap.containsKey(chatId) &&
+				!"WAITING_SPRINT_ID_FOR_VIEW".equals(stateMap.get(chatId)) &&
+				subtaskService.existsByTitle(messageTextFromTelegram.trim())
+			) {
+			
+			
 				
 				String title = messageTextFromTelegram.trim();
 			
 				Subtask s = subtaskService.getByTitleAndDeveloper(title, chatSessionMap.get(chatId));
 				if (s == null) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ No se encontró la subtarea o no está asignada a ti.", this);
+					BotHelper.showMainMenu(chatId, this);
 					return;
 				}
 			
@@ -281,6 +290,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Developer dev = developerService.getById(devId).orElse(null);
 				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ Solo los Project Managers pueden crear sprints.", this);
+					BotHelper.showMainMenu(chatId, this);
 					return;
 				}
 			
@@ -350,6 +360,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Developer dev = developerService.getById(devId).orElse(null);
 				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ Solo los Project Managers pueden asignar tareas a sprints.", this);
+					BotHelper.showMainMenu(chatId, this);
 					return;
 				}
 			
@@ -373,6 +384,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				sprintAssignmentMap.put(chatId, session);
 			
 				BotHelper.sendMessageToTelegram(chatId, msg.append("\n✏️ Escribe el ID de la tarea que deseas asignar:").toString(), this);
+			
 			} else if (messageTextFromTelegram.equals("/ver-sprint")) {
 			
 				List<Sprint> sprints = sprintService.findAll();  // Asegúrate de tener este método
@@ -397,6 +409,42 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
 				// Guardar que este chat está esperando input de sprintId
 				stateMap.put(chatId, "WAITING_SPRINT_ID_FOR_VIEW");
+				
+			} else if ("WAITING_SPRINT_ID_FOR_VIEW".equals(stateMap.get(chatId))) {
+				try {
+					Long sprintId = Long.parseLong(messageTextFromTelegram.trim());
+					Sprint sprint = sprintService.findById(sprintId).orElse(null);
+			
+					if (sprint == null) {
+						BotHelper.sendMessageToTelegram(chatId, "❌ No se encontró un sprint con ese ID.", this);
+						return;
+					}
+			
+					List<ToDoItem> tasks = toDoItemService.getBySprintId(sprintId);
+			
+					if (tasks.isEmpty()) {
+						BotHelper.sendMessageToTelegram(chatId, "📭 El sprint no tiene tareas asignadas.", this);
+					} else {
+						StringBuilder msg = new StringBuilder();
+						msg.append("📌 *Sprint #").append(sprint.getSprintNumber()).append("* (ID: ").append(sprint.getId()).append(")\n");
+						msg.append("🗓 ").append(sprint.getStartDate()).append(" ➡ ").append(sprint.getEndDate()).append("\n\n");
+			
+						for (ToDoItem t : tasks) {
+							msg.append("🔹 *").append(t.getTitle()).append("*\n");
+							msg.append("• Estado: ").append(t.getStatus()).append("\n");
+							msg.append("• Progreso: ").append(String.format("%.0f", t.getProgress())).append("%\n\n");
+						}
+			
+						BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
+						BotHelper.showMainMenu(chatId, this);
+					}
+				} catch (NumberFormatException e) {
+					BotHelper.sendMessageToTelegram(chatId, "❌ ID inválido. Intenta con un número.", this);
+					BotHelper.showMainMenu(chatId, this);
+				}
+			
+				stateMap.remove(chatId);
+				
 			} else if (messageTextFromTelegram.equals("/ver-developers")) {
 			
 				if (!chatSessionMap.containsKey(chatId)) {
@@ -410,6 +458,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			
 				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ Solo los Project Managers pueden ver esta información.", this);
+					BotHelper.showMainMenu(chatId, this);
 					return;
 				}
 			
@@ -489,12 +538,10 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			else if (messageTextFromTelegram.equals(BotLabels.CREATE_TASK.getLabel())) {
 				update.getMessage().setText("/crear-tarea");
 				onUpdateReceived(update);
-				BotHelper.showMainMenu(chatId, this);
 				return;
 			} else if (messageTextFromTelegram.equals(BotLabels.ASSIGN_TO_SPRINT.getLabel())) {
 				update.getMessage().setText("/asignar-sprint");
 				onUpdateReceived(update);
-				BotHelper.showMainMenu(chatId, this);
 				return;
 			} else if (messageTextFromTelegram.equals(BotLabels.VIEW_SPRINT_TASKS.getLabel())) {
 				update.getMessage().setText("/ver-sprint");
@@ -630,6 +677,7 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Developer dev = developerService.getById(devId).orElse(null);
 				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
 					BotHelper.sendMessageToTelegram(chatId, "⚠️ Solo los Project Managers pueden crear tareas.", this);
+					BotHelper.showMainMenu(chatId, this);
 					return;
 				}
 			
@@ -639,194 +687,195 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			
 				BotHelper.sendMessageToTelegram(chatId, "📝 ¿Cuál es el título de la nueva tarea?", this);
 			} else if (taskSessionMap.containsKey(chatId)) {
-    TaskCreationSession session = taskSessionMap.get(chatId);
-    String input = messageTextFromTelegram.trim();
+				TaskCreationSession session = taskSessionMap.get(chatId);
+				String input = messageTextFromTelegram.trim();
 
-    switch (session.state) {
-        case WAITING_TITLE:
-            session.title = input;
-            session.state = TaskCreationSession.State.WAITING_DESCRIPTION;
-            BotHelper.sendMessageToTelegram(chatId, "🧾 ¿Descripción de la tarea? (escribe 'ninguna' si no aplica)", this);
-            break;
+				switch (session.state) {
+					case WAITING_TITLE:
+						session.title = input;
+						session.state = TaskCreationSession.State.WAITING_DESCRIPTION;
+						BotHelper.sendMessageToTelegram(chatId, "🧾 ¿Descripción de la tarea? (escribe 'ninguna' si no aplica)", this);
+						break;
 
-        case WAITING_DESCRIPTION:
-            session.description = input.equalsIgnoreCase("ninguna") ? "" : input;
-            session.state = TaskCreationSession.State.WAITING_SPRINT;
-            BotHelper.sendMessageToTelegram(chatId, "📅 ¿ID del sprint? (escribe 'ninguno' si no aplica)", this);
-            break;
+					case WAITING_DESCRIPTION:
+						session.description = input.equalsIgnoreCase("ninguna") ? "" : input;
+						session.state = TaskCreationSession.State.WAITING_SPRINT;
+						BotHelper.sendMessageToTelegram(chatId, "📅 ¿ID del sprint? (escribe 'ninguno' si no aplica)", this);
+						break;
 
-        case WAITING_SPRINT:
-            if (!input.equalsIgnoreCase("ninguno")) {
-                try {
-                    session.sprintId = Long.parseLong(input);
-                } catch (NumberFormatException e) {
-                    BotHelper.sendMessageToTelegram(chatId, "❌ ID inválido. Ingresa un número o 'ninguno'.", this);
-                    return;
-                }
-            }
-            session.state = TaskCreationSession.State.WAITING_SUBTASK_COUNT;
-            BotHelper.sendMessageToTelegram(chatId, "🔢 ¿Cuántas subtareas quieres agregar?", this);
-            break;
+					case WAITING_SPRINT:
+						if (!input.equalsIgnoreCase("ninguno")) {
+							try {
+								session.sprintId = Long.parseLong(input);
+							} catch (NumberFormatException e) {
+								BotHelper.sendMessageToTelegram(chatId, "❌ ID inválido. Ingresa un número o 'ninguno'.", this);
+								return;
+							}
+						}
+						session.state = TaskCreationSession.State.WAITING_SUBTASK_COUNT;
+						BotHelper.sendMessageToTelegram(chatId, "🔢 ¿Cuántas subtareas quieres agregar?", this);
+						break;
 
-        case WAITING_SUBTASK_COUNT:
-            try {
-                session.expectedSubtaskCount = Integer.parseInt(input);
-                session.state = TaskCreationSession.State.WAITING_SUBTASK_TITLE;
-                BotHelper.sendMessageToTelegram(chatId, "📌 Título de la subtarea 1:", this);
-            } catch (NumberFormatException e) {
-                BotHelper.sendMessageToTelegram(chatId, "❌ Número inválido. Intenta de nuevo.", this);
-            }
-            break;
+					case WAITING_SUBTASK_COUNT:
+						try {
+							session.expectedSubtaskCount = Integer.parseInt(input);
+							session.state = TaskCreationSession.State.WAITING_SUBTASK_TITLE;
+							BotHelper.sendMessageToTelegram(chatId, "📌 Título de la subtarea 1:", this);
+						} catch (NumberFormatException e) {
+							BotHelper.sendMessageToTelegram(chatId, "❌ Número inválido. Intenta de nuevo.", this);
+						}
+						break;
 
-        case WAITING_SUBTASK_TITLE:
-            session.currentSubtask = new Subtask();
-            session.currentSubtask.setTitle(input);
-            session.state = TaskCreationSession.State.WAITING_SUBTASK_HOURS;
-            BotHelper.sendMessageToTelegram(chatId, "⏱️ ¿Horas estimadas (máx 4)?", this);
-            break;
+					case WAITING_SUBTASK_TITLE:
+						session.currentSubtask = new Subtask();
+						session.currentSubtask.setTitle(input);
+						session.state = TaskCreationSession.State.WAITING_SUBTASK_HOURS;
+						BotHelper.sendMessageToTelegram(chatId, "⏱️ ¿Horas estimadas (máx 4)?", this);
+						break;
 
-        case WAITING_SUBTASK_HOURS:
-            try {
-                double hours = Double.parseDouble(input.replace(",", "."));
-                if (hours <= 0 || hours > 4) {
-                    BotHelper.sendMessageToTelegram(chatId, "❌ El tiempo estimado debe estar entre 0 y 4 horas.", this);
-                    return;
-                }
-                session.currentSubtask.setEstimatedHours(hours);
-                session.state = TaskCreationSession.State.WAITING_SUBTASK_DEVELOPER;
-                BotHelper.sendMessageToTelegram(chatId, "👤 Ingresa el ID o número de teléfono del developer asignado:", this);
-            } catch (NumberFormatException e) {
-                BotHelper.sendMessageToTelegram(chatId, "❌ Valor inválido. Intenta con un número (ej: 2.5)", this);
-            }
-            break;
+					case WAITING_SUBTASK_HOURS:
+						try {
+							double hours = Double.parseDouble(input.replace(",", "."));
+							if (hours <= 0 || hours > 4) {
+								BotHelper.sendMessageToTelegram(chatId, "❌ El tiempo estimado debe estar entre 0 y 4 horas.", this);
+								return;
+							}
+							session.currentSubtask.setEstimatedHours(hours);
+							session.state = TaskCreationSession.State.WAITING_SUBTASK_DEVELOPER;
+							BotHelper.sendMessageToTelegram(chatId, "👤 Ingresa el ID o número de teléfono del developer asignado:", this);
+						} catch (NumberFormatException e) {
+							BotHelper.sendMessageToTelegram(chatId, "❌ Valor inválido. Intenta con un número (ej: 2.5)", this);
+						}
+						break;
 
-        case WAITING_SUBTASK_DEVELOPER:
-            Developer assigned = null;
-            if (input.startsWith("+")) {
-                assigned = developerService.getByPhoneNumber(input);
-            } else {
-                try {
-                    assigned = developerService.getById(Long.parseLong(input)).orElse(null);
-                } catch (NumberFormatException e) {
-                    // fallthrough
-                }
-            }
+					case WAITING_SUBTASK_DEVELOPER:
+						Developer assigned = null;
+						if (input.startsWith("+")) {
+							assigned = developerService.getByPhoneNumber(input);
+						} else {
+							try {
+								assigned = developerService.getById(Long.parseLong(input)).orElse(null);
+							} catch (NumberFormatException e) {
+								// fallthrough
+							}
+						}
 
-            if (assigned == null) {
-                BotHelper.sendMessageToTelegram(chatId, "❌ Developer no encontrado. Intenta con ID o número.", this);
-                return;
-            }
+						if (assigned == null) {
+							BotHelper.sendMessageToTelegram(chatId, "❌ Developer no encontrado. Intenta con ID o número.", this);
+							return;
+						}
 
-            session.currentSubtask.setAssignedDeveloperId(assigned.getId());
-            session.subtasks.add(session.currentSubtask);
-            session.currentSubtaskIndex++;
+						session.currentSubtask.setAssignedDeveloperId(assigned.getId());
+						session.subtasks.add(session.currentSubtask);
+						session.currentSubtaskIndex++;
 
-            if (session.currentSubtaskIndex < session.expectedSubtaskCount) {
-                session.state = TaskCreationSession.State.WAITING_SUBTASK_TITLE;
-                BotHelper.sendMessageToTelegram(chatId, "📌 Título de la subtarea " + (session.currentSubtaskIndex + 1) + ":", this);
-            } else {
-                // Finalizar: crear tarea y subtareas
-           ToDoItem newTask = new ToDoItem();
-			newTask.setTitle(session.title);
-			newTask.setDescription(session.description);
-			newTask.setSprint(session.sprintId != null ? sprintService.findById(session.sprintId).orElse(null) : null);
-			newTask.setStatus("Not Started"); // ✅ status requerido
-			ToDoItem savedTask = toDoItemService.addToDoItem(newTask);
+						if (session.currentSubtaskIndex < session.expectedSubtaskCount) {
+							session.state = TaskCreationSession.State.WAITING_SUBTASK_TITLE;
+							BotHelper.sendMessageToTelegram(chatId, "📌 Título de la subtarea " + (session.currentSubtaskIndex + 1) + ":", this);
+						} else {
+							// Finalizar: crear tarea y subtareas
+					ToDoItem newTask = new ToDoItem();
+						newTask.setTitle(session.title);
+						newTask.setDescription(session.description);
+						newTask.setSprint(session.sprintId != null ? sprintService.findById(session.sprintId).orElse(null) : null);
+						newTask.setStatus("Not Started"); // ✅ status requerido
+						ToDoItem savedTask = toDoItemService.addToDoItem(newTask);
 
 
-                for (Subtask st : session.subtasks) {
-                    st.setMainTask(savedTask);
-                    subtaskService.addSubtask(savedTask.getID(), st);
-                }
+							for (Subtask st : session.subtasks) {
+								st.setMainTask(savedTask);
+								subtaskService.addSubtask(savedTask.getID(), st);
+							}
 
-                BotHelper.sendMessageToTelegram(chatId, "✅ Tarea creada con " + session.subtasks.size() + " subtareas.", this);
-                taskSessionMap.remove(chatId);
-				BotHelper.showMainMenu(chatId, this);
-            }
-            break;
-    }
-} else if (sprintAssignmentMap.containsKey(chatId)) {
-    SprintAssignmentSession session = sprintAssignmentMap.get(chatId);
-    String input = messageTextFromTelegram.trim();
+							BotHelper.sendMessageToTelegram(chatId, "✅ Tarea creada con " + session.subtasks.size() + " subtareas.", this);
+							taskSessionMap.remove(chatId);
+							BotHelper.showMainMenu(chatId, this);
+						}
+						break;
+				}
+			} else if (sprintAssignmentMap.containsKey(chatId)) {
+				SprintAssignmentSession session = sprintAssignmentMap.get(chatId);
+				String input = messageTextFromTelegram.trim();
 
-    switch (session.state) {
-        case WAITING_TASK_SELECTION:
-            try {
-                Long taskId = Long.parseLong(input);
-                ToDoItem task = toDoItemService.getItemById(taskId).getBody();
+				switch (session.state) {
+					case WAITING_TASK_SELECTION:
+						try {
+							Long taskId = Long.parseLong(input);
+							ToDoItem task = toDoItemService.getItemById(taskId).getBody();
 
-                if (task == null || task.getSprint() != null) {
-                    BotHelper.sendMessageToTelegram(chatId, "❌ Tarea no válida o ya tiene sprint.", this);
-                    return;
-                }
+							if (task == null || task.getSprint() != null) {
+								BotHelper.sendMessageToTelegram(chatId, "❌ Tarea no válida o ya tiene sprint.", this);
+								return;
+							}
 
-                session.selectedTaskId = taskId;
-                session.state = SprintAssignmentSession.State.WAITING_SPRINT_ID;
+							session.selectedTaskId = taskId;
+							session.state = SprintAssignmentSession.State.WAITING_SPRINT_ID;
 
-                BotHelper.sendMessageToTelegram(chatId, "📌 Ingresa el ID del sprint al que deseas asignarla:", this);
+							BotHelper.sendMessageToTelegram(chatId, "📌 Ingresa el ID del sprint al que deseas asignarla:", this);
 
-            } catch (NumberFormatException e) {
-                BotHelper.sendMessageToTelegram(chatId, "❌ Por favor ingresa un ID válido.", this);
-            }
-            break;
+						} catch (NumberFormatException e) {
+							BotHelper.sendMessageToTelegram(chatId, "❌ Por favor ingresa un ID válido.", this);
+						}
+						break;
 
-        case WAITING_SPRINT_ID:
-            try {
-                Long sprintId = Long.parseLong(input);
-                ToDoItem task = toDoItemService.getItemById(session.selectedTaskId).getBody();
-                if (task == null) {
-                    BotHelper.sendMessageToTelegram(chatId, "❌ La tarea ya no existe.", this);
-                    sprintAssignmentMap.remove(chatId);
-					BotHelper.showMainMenu(chatId, this);
-                    return;
-                }
+					case WAITING_SPRINT_ID:
+						try {
+							Long sprintId = Long.parseLong(input);
+							ToDoItem task = toDoItemService.getItemById(session.selectedTaskId).getBody();
+							if (task == null) {
+								BotHelper.sendMessageToTelegram(chatId, "❌ La tarea ya no existe.", this);
+								sprintAssignmentMap.remove(chatId);
+								BotHelper.showMainMenu(chatId, this);
+								return;
+							}
 
-                Sprint sprint = new Sprint();
-                sprint.setId(sprintId);
-                task.setSprint(sprint);
+							Sprint sprint = new Sprint();
+							sprint.setId(sprintId);
+							task.setSprint(sprint);
 
-                ToDoItem updated = toDoItemService.updateToDoItem(task.getID(), task);
+							ToDoItem updated = toDoItemService.updateToDoItem(task.getID(), task);
 
-                if (updated != null) {
-                    BotHelper.sendMessageToTelegram(chatId, "✅ Tarea asignada al sprint correctamente.", this);
-                } else {
-                    BotHelper.sendMessageToTelegram(chatId, "❌ Falló la actualización de la tarea.", this);
-					BotHelper.showMainMenu(chatId, this);
-                }
-            } catch (NumberFormatException e) {
-                BotHelper.sendMessageToTelegram(chatId, "❌ ID de sprint inválido.", this);
-            }
-            sprintAssignmentMap.remove(chatId);
-			BotHelper.showMainMenu(chatId, this);
-            break;
-    }
-} else if (stateMap.getOrDefault(chatId, "").equals("WAITING_SPRINT_ID_FOR_VIEW")) {
-    try {
-        Long sprintId = Long.parseLong(messageTextFromTelegram.trim());
-        List<ToDoItem> tasks = toDoItemService.findAll().stream()
-                .filter(task -> task.getSprint() != null && task.getSprint().getId().equals(sprintId))
-                .toList();
+							if (updated != null) {
+								BotHelper.sendMessageToTelegram(chatId, "✅ Tarea asignada al sprint correctamente.", this);
+							} else {
+								BotHelper.sendMessageToTelegram(chatId, "❌ Falló la actualización de la tarea.", this);
+								BotHelper.showMainMenu(chatId, this);
+							}
+						} catch (NumberFormatException e) {
+							BotHelper.sendMessageToTelegram(chatId, "❌ ID de sprint inválido.", this);
+						}
+						sprintAssignmentMap.remove(chatId);
+						BotHelper.showMainMenu(chatId, this);
+						break;
+				}
+			} 
+// else if (stateMap.getOrDefault(chatId, "").equals("WAITING_SPRINT_ID_FOR_VIEW")) {
+//     try {
+//         Long sprintId = Long.parseLong(messageTextFromTelegram.trim());
+//         List<ToDoItem> tasks = toDoItemService.findAll().stream()
+//                 .filter(task -> task.getSprint() != null && task.getSprint().getId().equals(sprintId))
+//                 .toList();
 
-        if (tasks.isEmpty()) {
-            BotHelper.sendMessageToTelegram(chatId, "📭 Este sprint no tiene tareas asignadas.", this);
-        } else {
-            StringBuilder msg = new StringBuilder("📌 *Tareas del Sprint ID " + sprintId + ":*\n\n");
+//         if (tasks.isEmpty()) {
+//             BotHelper.sendMessageToTelegram(chatId, "📭 Este sprint no tiene tareas asignadas.", this);
+//         } else {
+//             StringBuilder msg = new StringBuilder("📌 *Tareas del Sprint ID " + sprintId + ":*\n\n");
 
-            for (ToDoItem t : tasks) {
-                msg.append("🔹 *").append(t.getTitle()).append("*\n")
-                   .append("• Estado: ").append(t.getStatus()).append("\n")
-                   .append("• Progreso: ").append(String.format("%.0f", t.getProgress())).append("%\n\n");
-            }
+//             for (ToDoItem t : tasks) {
+//                 msg.append("🔹 *").append(t.getTitle()).append("*\n")
+//                    .append("• Estado: ").append(t.getStatus()).append("\n")
+//                    .append("• Progreso: ").append(String.format("%.0f", t.getProgress())).append("%\n\n");
+//             }
 
-            BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
-        }
-    } catch (NumberFormatException e) {
-        BotHelper.sendMessageToTelegram(chatId, "❌ ID inválido. Intenta con un número.", this);
-    }
+//             BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
+//         }
+//     } catch (NumberFormatException e) {
+//         BotHelper.sendMessageToTelegram(chatId, "❌ ID inválido. Intenta con un número.", this);
+//     }
 
-    stateMap.remove(chatId); // Limpiar estado
-	BotHelper.showMainMenu(chatId, this);
-}
+//     stateMap.remove(chatId); // Limpiar estado
+// 	BotHelper.showMainMenu(chatId, this);
+// }
 
 
 		

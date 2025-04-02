@@ -124,4 +124,8 @@ public class ToDoItemService {
         return toDoItemRepository.findAll();
     }
     
+    public List<ToDoItem> getBySprintId(Long sprintId) {
+        return toDoItemRepository.findBySprintId(sprintId);
+    }
+    
 }
