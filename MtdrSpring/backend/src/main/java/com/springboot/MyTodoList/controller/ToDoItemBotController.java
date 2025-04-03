@@ -255,23 +255,26 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Sprint sprint = task.getSprint();
 			
 				StringBuilder msg = new StringBuilder("📄 *Detalles de la Subtarea:*\n\n");
-			
+
 				msg.append("🔹 *Título:* ").append(s.getTitle()).append("\n");
 				msg.append("⏱️ *Horas estimadas:* ").append(s.getEstimatedHours()).append("\n\n");
-			
+
 				msg.append("🗂 *Tarea Principal:*\n");
 				msg.append("• Título: ").append(task.getTitle()).append("\n");
 				msg.append("• Descripción: ").append(task.getDescription() == null ? "Ninguna" : task.getDescription()).append("\n");
-			
+				msg.append("• Estado: ").append(task.getStatus()).append("\n");
+				msg.append("• Progreso: ").append(String.format("%.0f", task.getProgress())).append("%\n");
+				msg.append("• Subtareas totales: ").append(subtaskService.findByMainTaskId(task.getID()).size()).append("\n");
+
 				if (sprint != null) {
-					msg.append("📆 *Sprint:*\n");
+					msg.append("\n📆 *Sprint:*\n");
 					msg.append("• Número: ").append(sprint.getSprintNumber()).append("\n");
 					msg.append("• ID: ").append(sprint.getId()).append("\n");
 					msg.append("• Fechas: ").append(sprint.getStartDate()).append(" ➡ ").append(sprint.getEndDate()).append("\n");
 				} else {
-					msg.append("📆 *Sprint:* Ninguno\n");
+					msg.append("\n📆 *Sprint:* Ninguno\n");
 				}
-			
+
 				BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
 				BotHelper.showMainMenu(chatId, this);
 			} else if (messageTextFromTelegram.equals(BotLabels.CREATE_SPRINT.getLabel())) {
