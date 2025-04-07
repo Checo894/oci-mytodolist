@@ -28,6 +28,7 @@ public class DeveloperControllerTests {
     @MockBean
     private DeveloperService developerService;
 
+    // Create endpoint to retrieve all developers
     @Test
     public void testGetAllDevelopers() throws Exception {
         // Arrange - Simular respuesta del servicio
