@@ -117,7 +117,10 @@ public class ToDoItemService {
 
     private String validateStatus(String status) {
         List<String> validStatuses = List.of("Not Started", "In Progress", "Completed", "Cancelled", "Incomplete");
-        return validStatuses.contains(status) ? status : "Not Started";
+        if (status == null || !validStatuses.contains(status)) {
+            return "Not Started";
+        }
+        return status;
     }
 
     public List<ToDoItem> getAllItemsIncludingInactive() {
