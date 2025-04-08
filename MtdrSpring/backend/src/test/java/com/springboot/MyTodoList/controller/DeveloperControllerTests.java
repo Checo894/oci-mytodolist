@@ -44,4 +44,4 @@ public class DeveloperControllerTests {
             .andExpect(jsonPath("$[0].name").value("Emiliano Neaves Ortiz"))
             .andExpect(jsonPath("$[0].role").value("developer"));
     }
-}
+} 
