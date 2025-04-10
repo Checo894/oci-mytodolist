@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +53,14 @@ public class DeveloperControllerTests {
     }
 
     // TEST [POST] Create endpoint to register a developer ----------------------------------------------------------------------------
-    // ...
+    @Test
+    public void shouldRegisterDeveloperSuccessfully() throws Exception {
+        mockMvc.perform(post("/developers/register")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{ \"name\": \"Test Register New User\", \"email\": \"newregister@domain.com\", \"passwordHash\": \"qwer1234\", \"phoneNumber\": \"0000000000\", \"role\": \"projectmanager\" }"))
+        .andExpect(status().isOk());
+
+    }
 
     // TEST [POST] Create endpoint to login a developer -------------------------------------------------------------------------------
     @Test
