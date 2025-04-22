@@ -17,11 +17,10 @@ public enum BotLabels {
 	VIEW_SPRINT_TASKS("📋 View Tasks by Sprint"), 
 	MY_SUBTASKS("👀 View My Subtasks"), 
 	CREATE_SPRINT("📅 Create Sprint"),
-	VIEW_DEVELOPERS("👥 Ver Developers");
-
-
-
-
+	VIEW_DEVELOPERS("👥 Ver Developers"),
+	VIEW_DEVELOPER_STATS("📊 Ver Reporte de Developer"),
+	VIEW_DEVELOPER_SUBTASKS("📋 Ver Subtareas de Developer"),
+	MY_STATS("📊 Ver mi reporte personal");
 
 	private String label;
 

@@ -2,11 +2,13 @@ package com.springboot.MyTodoList.controller;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,19 +21,20 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.springboot.MyTodoList.model.Developer;
+import com.springboot.MyTodoList.model.DeveloperStats;
 import com.springboot.MyTodoList.model.Sprint;
-import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.model.Subtask;
+import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.service.DeveloperService;
-import com.springboot.MyTodoList.service.ToDoItemService;
-import com.springboot.MyTodoList.service.SubtaskService;
+import com.springboot.MyTodoList.service.DeveloperStatsService;
 import com.springboot.MyTodoList.service.SprintService;
+import com.springboot.MyTodoList.service.SubtaskService;
+import com.springboot.MyTodoList.service.ToDoItemService;
 import com.springboot.MyTodoList.util.BotCommands;
 import com.springboot.MyTodoList.util.BotHelper;
 import com.springboot.MyTodoList.util.BotLabels;
@@ -54,16 +57,18 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 	private Map<Long, SprintAssignmentSession> sprintAssignmentMap = new HashMap<>();
 	private Map<Long, String> stateMap = new HashMap<>();
 	private Map<Long, SprintCreationSession> sprintSessionMap = new HashMap<>();
+	private DeveloperStatsService developerStatsService;
 
 
 	private DeveloperService developerService;
-	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService, DeveloperService developerService, SubtaskService subtaskService, SprintService sprintService) {
+	public ToDoItemBotController(String botToken, String botName, ToDoItemService toDoItemService, DeveloperService developerService, SubtaskService subtaskService, SprintService sprintService, DeveloperStatsService developerStatsService) {
 		super(botToken);
 		this.toDoItemService = toDoItemService;
 		this.botName = botName;
 		this.developerService = developerService;
 		this.subtaskService = subtaskService;
 		this.sprintService = sprintService;
+		this.developerStatsService = developerStatsService;
 	}
 
 
@@ -78,10 +83,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			if (dev != null) {
 				chatSessionMap.put(chatId, dev.getId());
 				BotHelper.sendMessageToTelegram(chatId, "✅ Sesión iniciada como: " + dev.getName(), this);
-				BotHelper.showMainMenu(chatId, this);
+				Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
+
 			} else {
 				BotHelper.sendMessageToTelegram(chatId, "⚠️ No se encontró ningún developer con ese número.", this);
-				BotHelper.showMainMenu(chatId, this);
+				Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 			}
 			return;
 		}
@@ -95,76 +103,80 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			if (messageTextFromTelegram.equals(BotCommands.START_COMMAND.getCommand())
 					|| messageTextFromTelegram.equals(BotLabels.SHOW_MAIN_SCREEN.getLabel())) {
 
-				SendMessage messageToTelegram = new SendMessage();
-				messageToTelegram.setChatId(chatId);
-				messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
+				// SendMessage messageToTelegram = new SendMessage();
+				// messageToTelegram.setChatId(chatId);
+				// messageToTelegram.setText(BotMessages.HELLO_MYTODO_BOT.getMessage());
 
-				ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-				List<KeyboardRow> keyboard = new ArrayList<>();
+				// ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+				// List<KeyboardRow> keyboard = new ArrayList<>();
 
-				// // first row
-				KeyboardRow row = new KeyboardRow();
-				// row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
-				// row.add(BotLabels.ADD_NEW_ITEM.getLabel());
-				// // Add the first row to the keyboard
-				// keyboard.add(row);
+				// // // first row
+				// KeyboardRow row = new KeyboardRow();
+				// // row.add(BotLabels.LIST_ALL_ITEMS.getLabel());
+				// // row.add(BotLabels.ADD_NEW_ITEM.getLabel());
+				// // // Add the first row to the keyboard
+				// // keyboard.add(row);
 
-				// second row
-				row = new KeyboardRow();
-				row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
-				// row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
-				// keyboard.add(row);
+				// // second row
+				// row = new KeyboardRow();
+				// row.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+				// // row.add(BotLabels.HIDE_MAIN_SCREEN.getLabel());
+				// // keyboard.add(row);
 
-				// third row
-				KeyboardRow subtaskRow = new KeyboardRow();
-				subtaskRow.add(BotLabels.MY_SUBTASKS.getLabel());
-				keyboard.add(subtaskRow);
+				// // third row
+				// KeyboardRow subtaskRow = new KeyboardRow();
+				// subtaskRow.add(BotLabels.MY_SUBTASKS.getLabel());
+				// keyboard.add(subtaskRow);
 
-				KeyboardRow taskRow = new KeyboardRow();
-				taskRow.add(BotLabels.CREATE_TASK.getLabel());
-				keyboard.add(taskRow);
+				// KeyboardRow taskRow = new KeyboardRow();
+				// taskRow.add(BotLabels.CREATE_TASK.getLabel());
+				// keyboard.add(taskRow);
 
-				KeyboardRow sprintRow = new KeyboardRow();
-				sprintRow.add(BotLabels.CREATE_SPRINT.getLabel());
-				keyboard.add(sprintRow);
+				// KeyboardRow sprintRow = new KeyboardRow();
+				// sprintRow.add(BotLabels.CREATE_SPRINT.getLabel());
+				// keyboard.add(sprintRow);
 
-				KeyboardRow assignRow = new KeyboardRow();
-				assignRow.add(BotLabels.ASSIGN_TO_SPRINT.getLabel());
-				keyboard.add(assignRow);
+				// KeyboardRow assignRow = new KeyboardRow();
+				// assignRow.add(BotLabels.ASSIGN_TO_SPRINT.getLabel());
+				// keyboard.add(assignRow);
 
-				KeyboardRow viewSprintRow = new KeyboardRow();
-				viewSprintRow.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
-				keyboard.add(viewSprintRow);
+				// KeyboardRow viewSprintRow = new KeyboardRow();
+				// viewSprintRow.add(BotLabels.VIEW_SPRINT_TASKS.getLabel());
+				// keyboard.add(viewSprintRow);
 
-				KeyboardRow devRow = new KeyboardRow();
-				devRow.add(BotLabels.VIEW_DEVELOPERS.getLabel());
-				keyboard.add(devRow);
+				// KeyboardRow devRow = new KeyboardRow();
+				// devRow.add(BotLabels.VIEW_DEVELOPERS.getLabel());
+				// keyboard.add(devRow);
 
 
-				// fourth row
-				KeyboardRow phoneRow = new KeyboardRow();
-				KeyboardButton sharePhoneButton = new KeyboardButton(BotLabels.SHARE_PHONE.getLabel());
-				sharePhoneButton.setRequestContact(true);
-				phoneRow.add(sharePhoneButton);
-				keyboard.add(phoneRow);
+				// // fourth row
+				// KeyboardRow phoneRow = new KeyboardRow();
+				// KeyboardButton sharePhoneButton = new KeyboardButton(BotLabels.SHARE_PHONE.getLabel());
+				// sharePhoneButton.setRequestContact(true);
+				// phoneRow.add(sharePhoneButton);
+				// keyboard.add(phoneRow);
 
-				// Set the keyboard
-				keyboardMarkup.setKeyboard(keyboard);
+				// // Set the keyboard
+				// keyboardMarkup.setKeyboard(keyboard);
 
-				// Add the keyboard markup
-				messageToTelegram.setReplyMarkup(keyboardMarkup);
+				// // Add the keyboard markup
+				// messageToTelegram.setReplyMarkup(keyboardMarkup);
 
-				try {
-					execute(messageToTelegram);
-				} catch (TelegramApiException e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
+				// try {
+				// 	execute(messageToTelegram);
+				// } catch (TelegramApiException e) {
+				// 	logger.error(e.getLocalizedMessage(), e);
+				// }
+
+				Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 
 			} else if (messageTextFromTelegram.equals(BotCommands.MY_SUBTASKS.getCommand())) {
 				
 				if (!chatSessionMap.containsKey(chatId)) {
 					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero comparte tu número para iniciar sesión.", this);
-					BotHelper.showMainMenu(chatId, this);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -218,7 +230,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Subtask subtask = subtaskService.getSubtaskById(subtaskId).getBody();
 				if (subtask == null || !subtask.getAssignedDeveloperId().equals(chatSessionMap.get(chatId))) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ No tienes acceso a esta subtarea.", this);
-					BotHelper.showMainMenu(chatId, this);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -231,8 +244,37 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					subtask.setActualHours(null);
 					subtaskService.updateSubtask(subtaskId, subtask);
 					BotHelper.sendMessageToTelegram(chatId, "↩️ Subtarea marcada como *no completada*.", this);
-					BotHelper.showMainMenu(chatId, this);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 				}
+			} else if (messageTextFromTelegram.equals(BotLabels.MY_STATS.getLabel())) {
+				Long devId = chatSessionMap.get(chatId);
+				DeveloperStats stats = developerStatsService.getById(devId).orElse(null);
+			
+				if (stats == null) {
+					BotHelper.sendMessageToTelegram(chatId, "❌ No se encontró tu reporte aún.", this);
+				} else {
+					String msg = String.format(
+						"📊 *Tu Reporte Personal (ID %d)*\n\n" +
+						"• Tareas asignadas: %d\n" +
+						"• Tareas completadas: %d\n" +
+						"• Horas estimadas: %.2f\n" +
+						"• Horas reales: %.2f\n" +
+						"• Última actualización: %s",
+						stats.getDeveloperId(),
+						stats.getTotalAssignedCount(),
+						stats.getTotalCompletedCount(),
+						stats.getSumEstimatedHours(),
+						stats.getSumActualHours(),
+						stats.getLastUpdatedTs().format(
+							DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+											 .withLocale(new Locale("es", "MX"))
+						)
+					);
+					BotHelper.sendMessageToTelegram(chatId, msg, this);
+				}
+			
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 			} else if (
 				!taskSessionMap.containsKey(chatId) &&
 				!sprintAssignmentMap.containsKey(chatId) &&
@@ -247,7 +289,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Subtask s = subtaskService.getByTitleAndDeveloper(title, chatSessionMap.get(chatId));
 				if (s == null) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ No se encontró la subtarea o no está asignada a ti.", this);
-					BotHelper.showMainMenu(chatId, this);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -258,7 +301,12 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 				msg.append("🔹 *Título:* ").append(s.getTitle()).append("\n");
 				msg.append("⏱️ *Horas estimadas:* ").append(s.getEstimatedHours()).append("\n\n");
-
+				if (s.isCompleted()) {
+					msg.append("✅ *Completada*\n");
+					msg.append("🕒 *Horas reales trabajadas:* ").append(s.getActualHours()).append("\n\n");
+				} else {
+					msg.append("🕒 *Pendiente de completar*\n\n");
+				}				
 				msg.append("🗂 *Tarea Principal:*\n");
 				msg.append("• Título: ").append(task.getTitle()).append("\n");
 				msg.append("• Descripción: ").append(task.getDescription() == null ? "Ninguna" : task.getDescription()).append("\n");
@@ -276,7 +324,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				}
 
 				BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
-				BotHelper.showMainMenu(chatId, this);
+				Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 			} else if (messageTextFromTelegram.equals(BotLabels.CREATE_SPRINT.getLabel())) {
 				update.getMessage().setText("/crear-sprint");
 				onUpdateReceived(update);
@@ -285,7 +334,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							
 				if (!chatSessionMap.containsKey(chatId)) {
 					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero comparte tu número para iniciar sesión.", this);
-					BotHelper.showMainMenu(chatId, this);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -293,7 +343,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Developer dev = developerService.getById(devId).orElse(null);
 				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ Solo los Project Managers pueden crear sprints.", this);
-					BotHelper.showMainMenu(chatId, this);
+					// Long devId = chatSessionMap.get(chatId);
+					BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -347,7 +398,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							BotHelper.sendMessageToTelegram(chatId, "❌ Error al crear el sprint.", this);
 						} finally {
 							sprintSessionMap.remove(chatId);
-							BotHelper.showMainMenu(chatId, this);
+							Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 						}
 						break;
 				}
@@ -355,7 +407,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			
 				if (!chatSessionMap.containsKey(chatId)) {
 					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero debes compartir tu número.", this);
-					BotHelper.showMainMenu(chatId, this);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -363,7 +416,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Developer dev = developerService.getById(devId).orElse(null);
 				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ Solo los Project Managers pueden asignar tareas a sprints.", this);
-					BotHelper.showMainMenu(chatId, this);
+					// Long devId = chatSessionMap.get(chatId);
+					BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -420,6 +474,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			
 					if (sprint == null) {
 						BotHelper.sendMessageToTelegram(chatId, "❌ No se encontró un sprint con ese ID.", this);
+						Long devId = chatSessionMap.get(chatId);
+						BotHelper.showMainMenu(chatId, devId, developerService, this);
 						return;
 					}
 			
@@ -439,11 +495,13 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						}
 			
 						BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
-						BotHelper.showMainMenu(chatId, this);
+						Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					}
 				} catch (NumberFormatException e) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ ID inválido. Intenta con un número.", this);
-					BotHelper.showMainMenu(chatId, this);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 				}
 			
 				stateMap.remove(chatId);
@@ -452,7 +510,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			
 				if (!chatSessionMap.containsKey(chatId)) {
 					BotHelper.sendMessageToTelegram(chatId, "⚠️ Primero comparte tu número para iniciar sesión.", this);
-					BotHelper.showMainMenu(chatId, this);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -461,7 +520,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 			
 				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
 					BotHelper.sendMessageToTelegram(chatId, "❌ Solo los Project Managers pueden ver esta información.", this);
-					BotHelper.showMainMenu(chatId, this);
+					// Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -475,11 +535,115 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						   .append(" – ").append(d.getName())
 						   .append("\n");
 					}
-					BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
+					// BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
+
+					SendMessage message = new SendMessage();
+					message.setChatId(chatId);
+					message.setText(msg.append("\nSelecciona una opción:").toString());
+
+					ReplyKeyboardMarkup keyboard = new ReplyKeyboardMarkup();
+					List<KeyboardRow> rows = new ArrayList<>();
+
+					KeyboardRow row1 = new KeyboardRow();
+					row1.add(BotLabels.VIEW_DEVELOPER_STATS.getLabel());
+
+					KeyboardRow row2 = new KeyboardRow();
+					row2.add(BotLabels.VIEW_DEVELOPER_SUBTASKS.getLabel());
+
+					KeyboardRow row3 = new KeyboardRow();
+					row3.add(BotLabels.SHOW_MAIN_SCREEN.getLabel());
+
+					rows.add(row1);
+					rows.add(row2);
+					rows.add(row3);
+
+					keyboard.setKeyboard(rows);
+					message.setReplyMarkup(keyboard);
+
+					try {
+						execute(message);
+					} catch (TelegramApiException e) {
+						logger.error(e.getLocalizedMessage(), e);
+					}
+					stateMap.put(chatId, "WAITING_CHOICE_FOR_DEVELOPER_ACTION");
 				}
 			
-				BotHelper.showMainMenu(chatId, this);
-			} else if (messageTextFromTelegram.equals(BotLabels.VIEW_DEVELOPERS.getLabel())) {
+				// Long devId = chatSessionMap.get(chatId);
+				// BotHelper.showMainMenu(chatId, devId, developerService, this);
+			}  else if ("WAITING_CHOICE_FOR_DEVELOPER_ACTION".equals(stateMap.get(chatId))) {
+				String input = messageTextFromTelegram.trim();
+				if (input.equals(BotLabels.VIEW_DEVELOPER_STATS.getLabel())) {
+					stateMap.put(chatId, "WAITING_DEV_ID_FOR_STATS");
+					BotHelper.sendMessageToTelegram(chatId, "📊 Ingresa el ID del developer para ver su reporte:", this);
+			
+				} else if (input.equals(BotLabels.VIEW_DEVELOPER_SUBTASKS.getLabel())) {
+					stateMap.put(chatId, "WAITING_DEV_ID_FOR_SUBTASKS");
+					BotHelper.sendMessageToTelegram(chatId, "📋 Ingresa el ID del developer para ver sus subtareas:", this);
+			
+				} else {
+					stateMap.remove(chatId);
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
+				}
+			} else if ("WAITING_DEV_ID_FOR_STATS".equals(stateMap.get(chatId))) {
+				try {
+					Long devId = Long.parseLong(messageTextFromTelegram.trim());
+					DeveloperStats stats = developerStatsService.getById(devId).orElse(null);
+
+					if (stats == null) {
+						BotHelper.sendMessageToTelegram(chatId, "❌ No se encontraron estadísticas para este developer.", this);
+					} else {
+						String msg = String.format(
+							"📊 *Reporte de Developer ID %d*\n\n" +
+							"• Tareas asignadas: %d\n" +
+							"• Tareas completadas: %d\n" +
+							"• Horas estimadas: %.2f\n" +
+							"• Horas reales: %.2f\n" +
+							"• Última actualización: %s",
+							stats.getDeveloperId(),
+							stats.getTotalAssignedCount(),
+							stats.getTotalCompletedCount(),
+							stats.getSumEstimatedHours(),
+							stats.getSumActualHours(),
+							stats.getLastUpdatedTs().format(
+    							DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+												.withLocale(new Locale("es", "MX"))
+							)
+
+						);
+						BotHelper.sendMessageToTelegram(chatId, msg, this);
+					}
+				} catch (Exception e) {
+					BotHelper.sendMessageToTelegram(chatId, "❌ ID inválido. Intenta con un número.", this);
+				}
+				stateMap.remove(chatId);
+				Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
+
+			} else if ("WAITING_DEV_ID_FOR_SUBTASKS".equals(stateMap.get(chatId))) {
+				try {
+					Long devId = Long.parseLong(messageTextFromTelegram.trim());
+					List<Subtask> subtasks = subtaskService.getSubtasksByDeveloper(devId);
+
+					if (subtasks.isEmpty()) {
+						BotHelper.sendMessageToTelegram(chatId, "📭 Este developer no tiene subtareas asignadas.", this);
+					} else {
+						StringBuilder msg = new StringBuilder("📋 *Subtareas del Developer ID " + devId + "*\n\n");
+						for (Subtask s : subtasks) {
+							msg.append("• ").append(s.getTitle())
+							.append(" | Horas estimadas: ").append(s.getEstimatedHours())
+							.append(" | Estado: ").append(s.isCompleted() ? "✅" : "🕒").append("\n");
+						}
+						BotHelper.sendMessageToTelegram(chatId, msg.toString(), this);
+					}
+				} catch (Exception e) {
+					BotHelper.sendMessageToTelegram(chatId, "❌ ID inválido. Intenta con un número.", this);
+				}
+				stateMap.remove(chatId);
+				Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
+			}
+			else if (messageTextFromTelegram.equals(BotLabels.VIEW_DEVELOPERS.getLabel())) {
 				update.getMessage().setText("/ver-developers");
 				onUpdateReceived(update);
 				return;
@@ -661,7 +825,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 						BotHelper.sendMessageToTelegram(chatId, "✅ Subtarea marcada como completada en " + actualHours + " horas.", this);
 					} else {
 						BotHelper.sendMessageToTelegram(chatId, "❌ No se encontró la subtarea.", this);
-						BotHelper.showMainMenu(chatId, this);
+						Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					}
 			
 				} catch (NumberFormatException e) {
@@ -671,7 +836,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 					BotHelper.sendMessageToTelegram(chatId, "❌ Ocurrió un error al guardar la subtarea.", this);
 				} finally {
 					pendingCompletionMap.remove(chatId); // limpiar sesión
-					BotHelper.showMainMenu(chatId, this); // Mostrar menú principal
+					Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this); // Mostrar menú principal
 				}
 				
 			} else if (messageTextFromTelegram.equals("/crear-tarea")) {
@@ -680,7 +846,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 				Developer dev = developerService.getById(devId).orElse(null);
 				if (dev == null || !dev.getRole().equalsIgnoreCase("projectmanager")) {
 					BotHelper.sendMessageToTelegram(chatId, "⚠️ Solo los Project Managers pueden crear tareas.", this);
-					BotHelper.showMainMenu(chatId, this);
+					// Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 					return;
 				}
 			
@@ -792,7 +959,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 
 							BotHelper.sendMessageToTelegram(chatId, "✅ Tarea creada con " + session.subtasks.size() + " subtareas.", this);
 							taskSessionMap.remove(chatId);
-							BotHelper.showMainMenu(chatId, this);
+							Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 						}
 						break;
 				}
@@ -828,7 +996,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 							if (task == null) {
 								BotHelper.sendMessageToTelegram(chatId, "❌ La tarea ya no existe.", this);
 								sprintAssignmentMap.remove(chatId);
-								BotHelper.showMainMenu(chatId, this);
+								Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 								return;
 							}
 
@@ -842,13 +1011,15 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 								BotHelper.sendMessageToTelegram(chatId, "✅ Tarea asignada al sprint correctamente.", this);
 							} else {
 								BotHelper.sendMessageToTelegram(chatId, "❌ Falló la actualización de la tarea.", this);
-								BotHelper.showMainMenu(chatId, this);
+								Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 							}
 						} catch (NumberFormatException e) {
 							BotHelper.sendMessageToTelegram(chatId, "❌ ID de sprint inválido.", this);
 						}
 						sprintAssignmentMap.remove(chatId);
-						BotHelper.showMainMenu(chatId, this);
+						Long devId = chatSessionMap.get(chatId);
+				BotHelper.showMainMenu(chatId, devId, developerService, this);
 						break;
 				}
 			} 
@@ -877,7 +1048,8 @@ public class ToDoItemBotController extends TelegramLongPollingBot {
 //     }
 
 //     stateMap.remove(chatId); // Limpiar estado
-// 	BotHelper.showMainMenu(chatId, this);
+// 	Long devId = chatSessionMap.get(chatId);
+				// BotHelper.showMainMenu(chatId, devId, developerService, this);
 // }
 
 
