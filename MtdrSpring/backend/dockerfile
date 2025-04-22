@@ -2,9 +2,9 @@ FROM openjdk:22
 #COPY pom.xml /tmp/
 #COPY src /tmp/src/
 WORKDIR /tmp/
-RUN mkdir -p /tmp/Wallet_reacttodolp41q
-COPY Wallet_reacttodolp41q /tmp/Wallet_reacttodolp41q
-ENV db_url="jdbc:oracle:thin:@reacttodolp41q_tp?TNS_ADMIN=/tmp/Wallet_reacttodolp41q"
+RUN mkdir -p /tmp/Wallet_CHATBOT
+COPY Wallet_CHATBOT /tmp/Wallet_CHATBOT
+ENV db_url="jdbc:oracle:thin:@chatbot_high?TNS_ADMIN=/tmp/Wallet_CHATBOT"
 ENV db_user="TODOUSER"
 ENV dbpassword="Pokemon12345"
 EXPOSE 8080
