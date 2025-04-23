@@ -155,3 +155,21 @@ button.DoneButton:hover {
   background: #2d2b29;
   border-radius: 6px;
 }
+
+.subtasks-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.subtask-card {
+  width: 200px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+button {
+  margin-top: 10px;
+}
