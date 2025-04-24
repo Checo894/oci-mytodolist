@@ -17,20 +17,25 @@ const SprintDetailView = () => {
     const [openAddTaskDialog, setOpenAddTaskDialog] = useState(false);
 
     useEffect(() => {
-        const fetchSprintData = async () => {
-          const sprintResponse = await fetch(`${process.env.REACT_APP_API_URL}sprints/${id}`);
-          const sprintData = await sprintResponse.json();
-          setSprint(sprintData);
-      
-          const tasksResponse = await fetch(`${process.env.REACT_APP_API_URL}todolist/sprint/${id}`);
+      const fetchSprintData = async () => {
+        const sprintResponse = await fetch(`${process.env.REACT_APP_API_URL}sprints/${id}`);
+        const sprintData = await sprintResponse.json();
+        setSprint(sprintData);
+    
+        const tasksResponse = await fetch(`${process.env.REACT_APP_API_URL}todolist/sprint/${id}`);
+        if (tasksResponse.ok) {
           const tasksData = await tasksResponse.json();
-          setTasks(tasksData);
-        };
+          setTasks(tasksData); // Solo actualiza si se recibe una respuesta válida
+        } else {
+          setTasks([]); // Si no hay tareas, aseguramos que el estado sea un arreglo vacío
+        }
+      };
 
         const fetchUnassignedTasks = async () => {
             const response = await fetch(`${process.env.REACT_APP_API_URL}todolist/without-sprint`); // Filtrar tareas donde sprint=null
             const data = await response.json();
             setUnassignedTasks(data);
+            console.log("Tareas no asignadas:", data); 
         };
       
         fetchSprintData();
@@ -110,13 +115,20 @@ const SprintDetailView = () => {
       };
       
       const handleAddTaskToSprint = async () => {
-        const taskToAdd = unassignedTasks.find((task) => task.id === selectedTaskId);
+        const taskToAdd = unassignedTasks.find((task) => task.id === parseInt(selectedTaskId));
       
         if (taskToAdd) {
           const updatedTask = {
-            ...taskToAdd, // Mantenemos todos los datos de la tarea original
-            sprint: id, // Asignamos el sprintId actual
+            ...taskToAdd, // Mantén todos los datos de la tarea original
+            sprint: {       // Enviar el objeto completo del sprint
+              id: id,       // Usamos el `id` del sprint actual
+              sprintNumber: sprint.sprintNumber, // Agregar el número de sprint
+              startDate: sprint.startDate,       // Fecha de inicio del sprint
+              endDate: sprint.endDate,           // Fecha de fin del sprint
+            },
           };
+      
+          console.log("Datos que se envían en el PUT:", updatedTask); // Verifica los datos
       
           const response = await fetch(`${process.env.REACT_APP_API_URL}todolist/${selectedTaskId}`, {
             method: "PUT",
@@ -130,19 +142,25 @@ const SprintDetailView = () => {
             setUnassignedTasks(unassignedTasks.filter((task) => task.id !== selectedTaskId)); // Eliminar de la lista de no asignadas
             setSnackbarMessage("Tarea asignada al sprint.");
             setSnackbarType("success");
+            setOpenAddTaskDialog(false); // Cerrar el modal
           } else {
+            console.error("Error al asignar la tarea. Respuesta:", response);
             setSnackbarMessage("Error al asignar la tarea.");
             setSnackbarType("error");
           }
-          
-          setOpenAddTaskDialog(false); // Cerrar el modal
+          setOpenSnackbar(true);
+        } else {
+          console.error("Tarea no encontrada: ", selectedTaskId);
+          setSnackbarMessage("Error: Tarea no encontrada.");
+          setSnackbarType("error");
+          setOpenSnackbar(true);
         }
-        setOpenSnackbar(true);
       };
-
-
+            
+      
 
     return (
+      <div className="sprint-detail-container">
         <div>
 
             <Button onClick={() => history.push("/manager")} color="primary">
@@ -162,15 +180,17 @@ const SprintDetailView = () => {
                 </>
             )}
 
-            <div className="tasks-container">
+
             <h3>Tareas del Sprint #{sprint?.sprintNumber}</h3>
 
             <Button onClick={() => setOpenAddTaskDialog(true)} variant="contained" color="primary">
                 Añadir Tarea al Sprint
             </Button>
 
+            <div className="tasks-container">
+
             {tasks.map((task) => (
-                <Card key={task.id} className="task-card">
+                <Card key={task.id} className="card-base">
                 <h4>{task.title}</h4>
                 <p>Status: {task.status}</p>
                 <p>Progreso: {task.progress}%</p>
@@ -201,6 +221,7 @@ const SprintDetailView = () => {
                 onChange={(e) => setNewSprintDetails({ ...newSprintDetails, startDate: e.target.value })}
                 fullWidth
                 required
+                InputLabelProps={{ shrink: true }}
                 />
                 <TextField
                 label="Fecha de Fin"
@@ -209,6 +230,7 @@ const SprintDetailView = () => {
                 onChange={(e) => setNewSprintDetails({ ...newSprintDetails, endDate: e.target.value })}
                 fullWidth
                 required
+                InputLabelProps={{ shrink: true }}
                 />
             </DialogContent>
             <DialogActions>
@@ -220,22 +242,24 @@ const SprintDetailView = () => {
             <Dialog open={openAddTaskDialog} onClose={() => setOpenAddTaskDialog(false)}>
             <DialogTitle>Agregar Tarea al Sprint</DialogTitle>
             <DialogContent>
-                <TextField
-                select
-                label="Selecciona una tarea"
-                value={selectedTaskId}
-                onChange={(e) => setSelectedTaskId(e.target.value)}
-                fullWidth
-                SelectProps={{ native: true }}
-                required
-                >
-                <option value="">-- Selecciona una tarea --</option>
-                {unassignedTasks.map((task) => (
-                    <option key={task.id} value={task.id}>
-                    {task.title}
-                    </option>
-                ))}
-                </TextField>
+            <TextField
+              select
+              label="Selecciona una tarea"
+              value={selectedTaskId}
+              onChange={(e) => {
+                setSelectedTaskId(e.target.value); // Actualiza selectedTaskId correctamente
+              }}
+              fullWidth
+              SelectProps={{ native: true }}
+              required
+            >
+              <option value="">-- Selecciona una tarea --</option>
+              {unassignedTasks.map((task) => (
+                <option key={task.id} value={task.id}>
+                  {task.title}
+                </option>
+              ))}
+            </TextField>
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => setOpenAddTaskDialog(false)} color="primary">
@@ -263,6 +287,8 @@ const SprintDetailView = () => {
             </Snackbar>
 
         </div>
+        </div>
+
     );
 };
 

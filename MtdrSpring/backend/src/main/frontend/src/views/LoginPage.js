@@ -44,34 +44,37 @@ function LoginPage() {
   };
 
   return (
-    <div className="login-container">
-      <h2>Iniciar sesión</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <label>Email:</label><br />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="ejemplo@correo.com"
-          />
-        </div>
-        <div>
-          <label>Contraseña:</label><br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="••••••••"
-          />
-        </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit">Ingresar</button>
-      </form>
+    <div className="login-wrapper">
+      <div className="login-container">
+        <h2>Iniciar sesión</h2>
+        <form onSubmit={handleLogin}>
+          <div>
+            <label>Email:</label><br />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="ejemplo@correo.com"
+            />
+          </div>
+          <div>
+            <label>Contraseña:</label><br />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+            />
+          </div>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          <button type="submit">Ingresar</button>
+        </form>
+      </div>
     </div>
   );
+  
 }
 
 export default LoginPage;

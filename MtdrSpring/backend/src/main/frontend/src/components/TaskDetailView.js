@@ -201,6 +201,7 @@ const TaskDetailView = () => {
   
 
   return (
+    <div className="task-detail-container">
     <div>
         <Button onClick={() => history.push("/manager")} color="primary">
             &lt; Regresar a la vista de tareas
@@ -225,14 +226,14 @@ const TaskDetailView = () => {
     <Button onClick={() => setOpenCreateSubtaskDialog(true)} color="primary" variant="contained">
         Añadir Subtarea
     </Button>
-
+    <div className="subtask-list">
     {subtasks.map((subtask) => {
         const assignedDeveloper = developers.find(
             (dev) => dev.id === subtask.assignedDeveloperId
         );
 
         return (
-            <Card key={subtask.id} className="subtask-card">
+            <Card key={subtask.id} className="card-base">
             <p><strong>Título:</strong> {subtask.title}</p>
             <p><strong>Completada:</strong> {subtask.completed ? "Sí" : "No"}</p>
             <p><strong>Horas estimadas:</strong> {subtask.estimatedHours}</p>
@@ -252,13 +253,14 @@ const TaskDetailView = () => {
                 }}>
                 Editar
             </Button>
-            <Button onClick={() => handleDeleteSubtask(subtask.id)} color="secondary">
+            <Button className="button-secondary" onClick={() => handleDeleteSubtask(subtask.id)} color="secondary">
                 Eliminar
             </Button>
 
             </Card>
         );
     })}
+    </div>
 
       {/* Modal para editar tarea */}
       <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)}>
@@ -279,7 +281,7 @@ const TaskDetailView = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenEditDialog(false)}>Cancelar</Button>
-          <Button onClick={handleUpdateTask} color="primary">Actualizar</Button>
+          <Button className="button-primary" onClick={handleUpdateTask} color="primary">Actualizar</Button>
         </DialogActions>
       </Dialog>
 
@@ -311,6 +313,8 @@ const TaskDetailView = () => {
             fullWidth
             SelectProps={{ native: true }}
             required
+            style={{ marginTop: "1rem" }}
+            InputLabelProps={{ shrink: true }}
             >
             <option value="">-- Selecciona un developer --</option>
             {developers.map((dev) => (
@@ -384,6 +388,7 @@ const TaskDetailView = () => {
                 message={snackbarMessage}
             />
         </Snackbar>
+    </div>
     </div>
   );
 };

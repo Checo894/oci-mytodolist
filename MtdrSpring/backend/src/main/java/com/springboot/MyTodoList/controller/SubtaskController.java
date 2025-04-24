@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,6 +90,8 @@ public class SubtaskController {
         SubtaskDetailDTO.TaskInfo taskInfo = new SubtaskDetailDTO.TaskInfo();
         taskInfo.title = task.getTitle();
         taskInfo.description = task.getDescription();
+        taskInfo.status = task.getStatus();
+        taskInfo.progress = task.getProgress();
 
         if (task.getSprint() != null) {
             Sprint sprint = task.getSprint();
@@ -104,5 +107,52 @@ public class SubtaskController {
 
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/details")
+    public ResponseEntity<?> getAllSubtaskDetails() {
+        List<Subtask> subtasks = subtaskRepository.findAll();  // Obtener todas las subtareas
+
+        if (subtasks.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No se encontraron subtareas activas"));
+        }
+
+        List<SubtaskDetailDTO> response = new ArrayList<>();
+
+        for (Subtask s : subtasks) {
+            if (!s.isActive()) {
+                continue; // Si la subtarea está desactivada, la saltamos
+            }
+
+            ToDoItem task = s.getMainTask();
+
+            SubtaskDetailDTO dto = new SubtaskDetailDTO();
+            dto.id = s.getId();
+            dto.title = s.getTitle();
+            dto.estimatedHours = s.getEstimatedHours();
+            dto.actualHours = s.getActualHours();
+            dto.completed = s.isCompleted();
+
+            SubtaskDetailDTO.TaskInfo taskInfo = new SubtaskDetailDTO.TaskInfo();
+            taskInfo.title = task.getTitle();
+            taskInfo.description = task.getDescription();
+
+            if (task.getSprint() != null) {
+                Sprint sprint = task.getSprint();
+                SubtaskDetailDTO.SprintInfo sprintInfo = new SubtaskDetailDTO.SprintInfo();
+                sprintInfo.id = sprint.getId();
+                sprintInfo.sprintNumber = sprint.getSprintNumber();
+                sprintInfo.startDate = sprint.getStartDate();
+                sprintInfo.endDate = sprint.getEndDate();
+                taskInfo.sprint = sprintInfo;
+            }
+
+            dto.task = taskInfo;
+            response.add(dto);  // Agregar los detalles de la subtarea a la respuesta
+        }
+
+        return ResponseEntity.ok(response);  // Devolver todas las subtareas con sus detalles
+    }
+
 
 }

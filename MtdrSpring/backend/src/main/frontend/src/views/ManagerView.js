@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Tab, Tabs, Card, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Snackbar, SnackbarContent } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
+import {BarChart,Bar,PieChart,Pie,Cell,XAxis,YAxis,Tooltip,ResponsiveContainer,Legend,} from "recharts";
+
 
 function ManagerView() {
     const [activeTab, setActiveTab] = useState(0);
@@ -27,6 +29,19 @@ function ManagerView() {
     const [sprints, setSprints] = useState([]); // Estado para los sprints
     const [sprintOpenCreateDialog, setSprintOpenCreateDialog] = useState(false); // Modal para crear sprint
     const [newSprint, setNewSprint] = useState({ sprintNumber: "", startDate: "", endDate: "" }); // Estado para el nuevo sprint
+
+    const [developers, setDevelopers] = useState([]);
+    const [selectedDeveloper, setSelectedDeveloper] = useState("equipo");
+    const [selectedSprint, setSelectedSprint] = useState(null);
+    const [reportData, setReportData] = useState(null);
+    
+    const [completedSubtasks, setCompletedSubtasks] = useState([]);
+
+
+
+
+    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+
 
     const history = useHistory();
 
@@ -56,12 +71,77 @@ function ManagerView() {
             const data = await response.json();
             setSprints(data);
         };
+
+        const fetchDevelopers = async () => {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}developers`);
+          const data = await response.json();
+          setDevelopers(data);
+      };
   
         fetchSubtasks();
+        fetchDevelopers();
         fetchDeveloperStats();
         fetchTasks();
         fetchSprints();
     }, []);
+
+    useEffect(() => {
+      const fetchReportData = async () => {
+        if (!selectedSprint) return;
+    
+        try {
+          let response;
+          if (selectedDeveloper === "equipo") {
+            response = await fetch(`${process.env.REACT_APP_API_URL}sprint-stats/${selectedSprint}`);
+            const data = await response.json();
+            setReportData({
+              assigned: data.totalSubtasks,
+              completed: data.totalCompleted,
+              estimated: data.sumEstimatedHours,
+              actual: data.sumActualHours,
+              lastUpdatedTs: data.lastUpdatedTs,
+            });
+          } else {
+            response = await fetch(`${process.env.REACT_APP_API_URL}developer-sprint-stats/developer/${selectedDeveloper}/sprint/${selectedSprint}`);
+            const [data] = await response.json();
+            if (data) {
+              setReportData({
+                assigned: data.totalAssignedCount,
+                completed: data.totalCompletedCount,
+                estimated: data.sumEstimatedHours,
+                actual: data.sumActualHours,
+                lastUpdatedTs: data.lastUpdatedTs,
+              });
+            } else {
+              setReportData(null); // No hay datos
+            }
+          }
+        } catch (error) {
+          console.error("Error al obtener los datos del reporte:", error);
+          setReportData(null);
+        }  
+      };
+      const fetchCompletedSubtasks = async () => {
+        try {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}subtasks/details`);
+          const data = await response.json();
+          // Filtrar por sprint seleccionado y solo completadas
+          const filtered = data.filter(
+            (subtask) =>
+              subtask.completed === true &&
+              subtask.task.sprint &&
+              subtask.task.sprint.id === selectedSprint
+          );
+          setCompletedSubtasks(filtered);
+        } catch (error) {
+          console.error("Error al obtener subtareas completadas:", error);
+        }
+      };
+    
+      fetchReportData();
+      fetchCompletedSubtasks();
+    }, [selectedDeveloper, selectedSprint]);
+    
 
     const handleViewSubtaskDetails = async (subtaskId) => {
         try {
@@ -275,7 +355,7 @@ function ManagerView() {
 
     return (
         <div>
-        <h1>Bienvenido, {localStorage.getItem("name")}</h1>
+        <h1 className="manager-header">Bienvenido, {localStorage.getItem("name")}</h1>
 
         {/* Pestañas */}
         <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)} aria-label="manager tabs">
@@ -313,8 +393,8 @@ function ManagerView() {
                 <>
                 <h3>{subtaskTaskDetails.title}</h3>
                 <p>{subtaskTaskDetails.task.description}</p>
-                <p><strong>Estado:</strong> {subtaskTaskDetails.status}</p>
-                <p><strong>Progreso:</strong> {subtaskTaskDetails.progress}</p>
+                <p><strong>Estado:</strong> {subtaskTaskDetails.task.status}</p>
+                <p><strong>Progreso:</strong> {subtaskTaskDetails.task.progress}</p>
                 <p><strong>Sprint:</strong> {subtaskTaskDetails.task.sprint ? `#${subtaskTaskDetails.task.sprint.sprintNumber} (${subtaskTaskDetails.task.sprint.startDate} - ${subtaskTaskDetails.task.sprint.endDate})` : "No pertenece a ningún sprint"}</p>
                 <p><strong>Horas Estimadas:</strong> {subtaskTaskDetails.estimatedHours}</p>
                 <p><strong>Horas Reales:</strong> {subtaskTaskDetails.completed ? subtaskTaskDetails.actualHours : "N/A"}</p>
@@ -377,7 +457,7 @@ function ManagerView() {
             {/* Lista de tareas */}
             <div className="tasks-list">
                 {tasks.map((task) => (
-                <Card key={task.id} className="task-card">
+                <Card key={task.id} className="card-base">
                     <h3>{task.title}</h3>
                     <p>Status: {task.status}</p>
                     <p>Progreso: {task.progress}%</p>
@@ -483,7 +563,7 @@ function ManagerView() {
           {/* Lista de sprints */}
           <div className="sprints-list">
             {sprints.map((sprint) => (
-              <Card key={sprint.id} className="sprint-card">
+              <Card key={sprint.id} className="card-base">
                 <h3>Sprint #{sprint.sprintNumber}</h3>
                 <p>Fecha de Inicio: {sprint.startDate}</p>
                 <p>Fecha de Fin: {sprint.endDate}</p>
@@ -512,6 +592,8 @@ function ManagerView() {
             onChange={(e) => setNewSprint({ ...newSprint, startDate: e.target.value })}
             fullWidth
             required
+            style={{ marginTop: "1rem" }}
+            InputLabelProps={{ shrink: true }}
           />
           <TextField
             label="Fecha de Fin"
@@ -520,6 +602,8 @@ function ManagerView() {
             onChange={(e) => setNewSprint({ ...newSprint, endDate: e.target.value })}
             fullWidth
             required
+            style={{ marginTop: "1rem" }}
+            InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>
@@ -532,7 +616,144 @@ function ManagerView() {
         </DialogActions>
       </Dialog>
 
+      {activeTab === 4 && (
+      <div className="report-filter">
+      <h2>Reportes por Sprint</h2>
 
+      <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+        <TextField
+          select
+          label="Seleccionar desarrollador"
+          value={selectedDeveloper}
+          onChange={(e) => setSelectedDeveloper(e.target.value)}
+          SelectProps={{ native: true }}
+          variant="outlined"
+        >
+          <option value="equipo">Equipo completo</option>
+          {developers.map((dev) => (
+            <option key={dev.id} value={dev.id}>{dev.name}</option>
+          ))}
+        </TextField>
+
+        <TextField
+          select
+          label="Seleccionar sprint"
+          value={selectedSprint || ""}
+          onChange={(e) => setSelectedSprint(Number(e.target.value))}
+          SelectProps={{ native: true }}
+          variant="outlined"
+        >
+          {sprints.map((sprint) => (
+            <option key={sprint.id} value={sprint.id}>
+              Sprint #{sprint.sprintNumber}
+            </option>
+          ))}
+        </TextField>
+      </div>
+
+      {reportData ? (
+          <div style={{ marginTop: "2rem" }}>
+            <p><strong>Last Updated: </strong>{new Date(reportData.lastUpdatedTs).toLocaleString()}</p>
+            <h3>Resumen de Actividad</h3>
+            <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
+              <Card style={{ padding: "1rem", minWidth: "200px" }}>
+                <h4>Horas Estimadas</h4>
+                <p>{reportData.estimated} hrs</p>
+              </Card>
+              <Card style={{ padding: "1rem", minWidth: "200px" }}>
+                <h4>Horas Reales</h4>
+                <p>{reportData.actual} hrs</p>
+              </Card>
+              <Card style={{ padding: "1rem", minWidth: "200px" }}>
+                <h4>Subtareas Asignadas</h4>
+                <p>{reportData.assigned}</p>
+              </Card>
+              <Card style={{ padding: "1rem", minWidth: "200px" }}>
+                <h4>Subtareas Completadas</h4>
+                <p>{reportData.completed}</p>
+              </Card>
+            </div>
+          </div>
+        ) : (
+          <p style={{ marginTop: "1rem" }}>No hay datos disponibles para esta combinación.</p>
+        )}
+
+      {reportData && (
+        <div style={{ marginTop: "2rem" }}>
+          <h3>Comparación de Horas</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={[{ name: "Horas", Estimadas: reportData.estimated, Reales: reportData.actual }]}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="Estimadas" fill="#8884d8" />
+              <Bar dataKey="Reales" fill="#82ca9d" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      {reportData && (
+        <div style={{ marginTop: "2rem" }}>
+          <h3>Progreso de Subtareas</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={[
+                  { name: "Completadas", value: reportData.completed },
+                  { name: "Pendientes", value: reportData.assigned - reportData.completed },
+                ]}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={100}
+                fill="#8884d8"
+                label
+              >
+                <Cell fill="#00C49F" />
+                <Cell fill="#FF8042" />
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      {completedSubtasks.length > 0 && (
+        <div style={{ marginTop: "3rem" }}>
+          <h3>Subtareas Completadas del Sprint</h3>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Subtarea</th>
+                <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Tarea</th>
+                <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Inicio Sprint</th>
+                <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Fin Sprint</th>
+                <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Horas Estimadas</th>
+                <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Horas Reales</th>
+              </tr>
+            </thead>
+            <tbody>
+              {completedSubtasks.map((sub) => (
+                <tr key={sub.id}>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.title}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.task.title}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.task.sprint.startDate}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.task.sprint.endDate}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.estimatedHours}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.actualHours ?? "N/A"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+
+    </div>
+     )}
 
 
       {/* Snackbar para mostrar mensajes */}

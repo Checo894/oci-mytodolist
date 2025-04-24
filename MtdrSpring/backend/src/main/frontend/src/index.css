@@ -1,175 +1,349 @@
+/* index.css */
+
+/* Estilo general del body */
 body {
-  background-color: #ffffff;
-  width: 100%;
-  /* max-width: 50rem; */
-  margin: 0 auto;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f8;
 }
-.App {
-  background: #201E1C;
-  color: #FEF9F2;
+
+/* Contenedor del login */
+
+.login-wrapper {
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  font-size: max(12px,min(2vw, 18px));
-  margin: 2rem 0 4rem 0;
+  background-color: #f4f6f8;
   padding: 1rem;
-  position: relative;
-  box-shadow: 0 10px 18px 0 rgba(0, 0, 0, 0.2), 0 4.5rem 8rem 0 rgba(0, 0, 0, 0.1);
-  border-radius: 0.5rem;
+  box-sizing: border-box;
 }
-div#maincontent, div#newinputform form {
-  width: 95%;
+
+.login-container {
+  background-color: white;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 360px;
 }
-div#maincontent {
-  margin: 0;
-  padding: 0;
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
 }
-h1, h2, h3 {
+
+/* Input fields */
+.login-container input[type="email"],
+.login-container input[type="password"] {
+  width: 100%;
+  padding: 0.75rem;
   margin: 0.5rem 0 1rem 0;
-  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 1rem;
 }
-#newiteminput, #newitemdescription, #newitemdate {
+
+/* Botón */
+.login-container button {
   width: 100%;
-  margin-bottom: 0.5rem;
+  padding: 0.75rem;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
-div#newinputform {
-  width: 100%;
+
+.login-container button:hover {
+  background-color: #115293;
 }
-div#newinputform form{
-  display: flex;
-  flex-direction: column;
-  margin: 0 auto;
-}
-#donelist {
-  margin: 0;
-  padding: 0;
-}
-.task-item {
-  background: #2A2725;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 0.5rem;
-  width: 90%;
-}
-.subtask-list {
+
+/* Mensaje de error */
+.login-container p {
+  text-align: center;
   margin-top: 0.5rem;
 }
-table.itemlist {
-  margin-top: 0.7rem;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-}
-table.itemlist td {
-  border-bottom: solid 1px #5B5652;
-  padding: .5rem;
-}
-table.itemlist td.description {
-  width: 100%;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-table.itemlist td.date {
-  font-size: max(10px,min(1.5vw, 14px));
-  color: grey;
-  white-space: nowrap;
-  padding-right: 0;
-  padding-left: 0;
-}
-table.itemlist tr:hover {
-  background-color: #161513;
-}
-input {
-  font-family: inherit;
-  font-size: 100%;
-  line-height: 1;
-  margin: 0;
-}
-button,
-input {
-  overflow: visible;
-}
-input[type="text"], input[type="date"], textarea {
-  border-radius: 0.3rem;
-  padding-left: 10px;
-}
-button.AddButton,
-button.DeleteButton,
-button.DoneButton {
-  font-size: max(8px,min(2vw, 12px));
-  padding: 0.35em 0.5em;
-  color:#161513;
-}
-button.AddButton {
-  color: #FEF9F2;
-  background-color: #5F7D4F;
-}
-button.AddButton:hover {
-  background-color: #6F915D;
-}
-button.DeleteButton {
-  color: #FEF9F2;
-  background-color:  #D63B25;
-}
-button.DeleteButton:hover {
-  background-color: #EC4F3A;
-}
-button.DoneButton {
-  background-color: #FBF9F8;
-}
-button.DoneButton:hover {
-  background-color: #D4CFCA;
-}
-.task-box {
-  background: #2d2b29;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
+
+/* Estilo para developer view */
+.developer-header {
+  text-align: left;
+  margin: 2rem 2rem 1rem;
+  font-size: 1.8rem;
+  color: #333;
 }
 
-.task-header {
+
+/* Contenedor de subtareas */
+.subtasks-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 0 2rem;
+}
+
+/* Tarjetas de subtareas */
+.subtask-card {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
+  min-height: 220px; /* Ajusta según tu contenido promedio */
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff;
 }
 
-.task-header:hover {
-  background: #44423e;
+.subtask-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  color: #1976d2;
 }
 
-.task-details {
-  margin-top: 10px;
-  padding: 10px;
-  background: #1e1d1b;
+.subtask-card p {
+  flex-grow: 1;
+  color: #444;
+  margin-bottom: 1rem;
+}
+
+/* Botones */
+.subtask-card button {
+  margin-top: auto;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.5rem;
   border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.subtask-card button + button {
+  margin-top: 0.5rem;
+}
+
+.subtask-card button:hover {
+  background-color: #115293;
+}
+
+/* Contenedor de reporte */
+.report-container {
+  margin-top: 2rem;
+  padding: 1rem 2rem;
+  background-color: #ffffff;
+  border-radius: 10px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.report-container h2 {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Tabs */
+/* Pestañas */
+.MuiTabs-root {
+  background-color: #ffffff;
+  margin: 0 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.MuiTab-root {
+  text-transform: none !important;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.Mui-selected {
+  color: #1976d2 !important;
+}
+
+.MuiDialogContent-root {
+  font-size: 1rem;
+  color: #333; /* asegúrate que no sea blanco */
+  line-height: 1.5;
+}
+
+.MuiDialogTitle-root {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #1976d2;
+}
+
+.MuiDialogContent-root h3 {
+  margin-top: 0;
+  color: #1976d2;
+}
+
+.MuiDialogContent-root p {
+  margin: 0.5rem 0;
+}
+
+
+/* Título general */
+h1 {
+  text-align: center;
+  margin-top: 2rem;
+  color: #333;
+}
+
+/* Estilo para manager view */
+
+.manager-header {
+  text-align: left;
+  margin: 2rem 2rem 1rem;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.task-container, .sprint-container {
+  padding: 2rem;
+}
+
+.tasks-list, .sprints-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+
+.report-container, .report-filter {
+  margin: 2rem;
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.report-container h2, .report-filter h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.card-base {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+  padding: 1rem;
+  border-radius: 10px;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.card-base h3 {
+  margin: 0 0 0.5rem;
+  color: #1976d2;
+}
+
+.card-base p {
+  flex-grow: 1;
+  color: #444;
+  margin-bottom: 0.5rem;
+}
+
+.card-base button {
+  margin-top: auto;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.card-base button:hover {
+  background-color: #115293;
+}
+
+.card-base button + button {
+  margin-top: 0.5rem;
+}
+
+
+
+
+/* Estilo para la vista de tareas */
+
+.task-detail-container {
+  padding: 2rem;
+}
+
+.task-detail-container h2 {
+  margin-bottom: 1rem;
+  color: #1976d2;
+}
+
+.task-detail-container p {
+  margin: 0.25rem 0;
+  color: #333;
+}
+
+.task-detail-container button {
+  margin-right: 0.5rem;
+}
+
+.button-primary {
+  background-color: #1976d2;
+  color: white;
+}
+
+.button-primary:hover {
+  background-color: #115293;
+}
+
+.button-secondary {
+  background-color: #f44336;
+  color: white;
+}
+
+.button-secondary:hover {
+  background-color: #c62828;
 }
 
 .subtask-list {
-  margin-top: 10px;
-  padding: 10px;
-  background: #2d2b29;
-  border-radius: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-.subtasks-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+
+
+
+/* Estilo para la vista de sprints */
+
+
+.sprint-detail-container {
+  padding: 2rem;
 }
 
-.subtask-card {
-  width: 200px;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.sprint-detail-container h2 {
+  margin-bottom: 1rem;
+  color: #1976d2;
 }
 
-button {
-  margin-top: 10px;
+.sprint-detail-container p {
+  margin: 0.25rem 0;
+  color: #333;
 }
+
+.tasks-container {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+

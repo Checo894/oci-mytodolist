@@ -41,6 +41,7 @@ function DeveloperView() {
       const response = await fetch(`${process.env.REACT_APP_API_URL}subtasks/${subtaskId}/details`);
       const data = await response.json();
       setTaskDetails(data);
+      console.log("Detalles de la tarea:", data);
       setOpenDetailsDialog(true); // Abrir el modal de detalles
     } catch (error) {
       console.error("Error al obtener los detalles de la tarea:", error);
@@ -126,7 +127,7 @@ function DeveloperView() {
 
   return (
     <div>
-      <h1>Bienvenido, {localStorage.getItem("name")}</h1>
+      <h1 className="developer-header">Bienvenido, {localStorage.getItem("name")}</h1>
 
       {/* Pestañas */}
       <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)} aria-label="developer tabs">
@@ -172,8 +173,8 @@ function DeveloperView() {
             <>
               <h3>{taskDetails.title}</h3>
               <p>{taskDetails.task.description}</p>
-              <p><strong>Estado:</strong> {taskDetails.status}</p>
-              <p><strong>Progreso:</strong> {taskDetails.progress}</p>
+              <p><strong>Estado:</strong> {taskDetails.task.status}</p>
+              <p><strong>Progreso:</strong> {taskDetails.task.progress}</p>
               <p><strong>Sprint:</strong> {taskDetails.task.sprint ? `#${taskDetails.task.sprint.sprintNumber} (${taskDetails.task.sprint.startDate} - ${taskDetails.task.sprint.endDate})` : "No pertenece a ningún sprint"}</p>
               <p><strong>Horas Estimadas:</strong> {taskDetails.estimatedHours}</p>
               <p><strong>Horas Reales:</strong> {taskDetails.completed ? taskDetails.actualHours : "N/A"}</p>

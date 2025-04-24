@@ -15,6 +15,8 @@ public class SubtaskDetailDTO {
         public String title;
         public String description;
         public SprintInfo sprint;
+        public String status;
+        public double progress;
     }
 
     public static class SprintInfo {
