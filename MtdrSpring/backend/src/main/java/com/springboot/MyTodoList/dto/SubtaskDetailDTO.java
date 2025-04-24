@@ -7,6 +7,8 @@ public class SubtaskDetailDTO {
     public Long id;
     public String title;
     public Double estimatedHours;
+    public Double actualHours;
+    public Boolean completed;
     public TaskInfo task;
 
     public static class TaskInfo {

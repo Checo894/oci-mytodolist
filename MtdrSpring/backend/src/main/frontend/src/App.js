@@ -4,6 +4,8 @@ import LoginPage from "./views/LoginPage";
 // Los siguientes componentes serán creados después
 import DeveloperView from "./views/DeveloperView";
 import ManagerView from "./views/ManagerView";
+import TaskDetailView from "./components/TaskDetailView";
+import SprintDetailView from "./components/SprintDetailView";
 
 function App() {
   return (
@@ -14,7 +16,9 @@ function App() {
         </Route>
         <Route path="/login" component={LoginPage} />
         <Route path="/developer" component={DeveloperView} />
-        <Route path="/manager" component={ManagerView} />
+        <Route exact path="/manager" component={ManagerView} />
+        <Route exact path="/manager/task/:id" component={TaskDetailView} />
+        <Route exact path="/manager/sprint/:id" component={SprintDetailView} />
       </Switch>
     </Router>
   );

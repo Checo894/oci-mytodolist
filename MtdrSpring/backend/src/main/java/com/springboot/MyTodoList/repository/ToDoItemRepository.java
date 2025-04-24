@@ -26,4 +26,8 @@ public interface ToDoItemRepository extends JpaRepository<ToDoItem, Long> {
 
     List<ToDoItem> findBySprintId(Long sprintId);
 
+    List<ToDoItem> findBySprintIsNull();
+
+    List<ToDoItem> findBySprintIsNullAndIsActiveTrue();
+
 }

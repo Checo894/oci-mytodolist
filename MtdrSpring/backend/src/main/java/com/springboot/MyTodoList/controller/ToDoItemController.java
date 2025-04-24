@@ -81,4 +81,40 @@ public class ToDoItemController {
         return toDoItemService.getAllItemsIncludingInactive();
     }
 
+    @GetMapping("/sprint/{sprintId}")
+    public ResponseEntity<List<ToDoItem>> getTasksBySprintId(@PathVariable Long sprintId) {
+        List<ToDoItem> tasks = toDoItemService.getBySprintId(sprintId);
+
+        if (tasks.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/sprint/null")
+    public ResponseEntity<List<ToDoItem>> getTasksWithoutSprint() {
+        List<ToDoItem> tasks = toDoItemService.getTasksWithoutSprint();
+
+        if (tasks.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/without-sprint")
+    public ResponseEntity<List<ToDoItem>> getTasksWithoutSprintAndActive() {
+        List<ToDoItem> tasks = toDoItemService.getTasksWithoutSprintAndActive();
+
+        if (tasks.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(tasks);
+    }
+
+
+
+   
 }

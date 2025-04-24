@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Tab, Tabs, Card, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@material-ui/core";
-import { useHistory } from "react-router-dom";
+import { Tab, Tabs, Card, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Snackbar, SnackbarContent } from "@material-ui/core";
+// import { useHistory } from "react-router-dom";
 
 function DeveloperView() {
   const [activeTab, setActiveTab] = useState(0);
+  const [openSnackbar, setOpenSnackbar] = useState(false); // Estado para el Snackbar
+  const [snackbarMessage, setSnackbarMessage] = useState(""); // Mensaje del Snackbar
+  const [snackbarType, setSnackbarType] = useState("success");
+
   const [subtasks, setSubtasks] = useState([]);
   const [developerStats, setDeveloperStats] = useState({});
   const [taskDetails, setTaskDetails] = useState(null);
@@ -11,7 +15,7 @@ function DeveloperView() {
   const [openCompletionDialog, setOpenCompletionDialog] = useState(false); // Estado para el modal de completar tarea
   const [selectedSubtask, setSelectedSubtask] = useState(null); // Subtarea seleccionada
   const [actualHours, setActualHours] = useState(0); // Estado para las horas reales
-  const history = useHistory();
+  // const history = useHistory();
 
   useEffect(() => {
     const fetchSubtasks = async () => {
@@ -58,7 +62,7 @@ function DeveloperView() {
       completed: false,
       assignedDeveloperId: subtask.assignedDeveloperId,
       estimatedHours: subtask.estimatedHours,
-      actualHours: 0, // Restaurar las horas reales a 0
+      actualHours: null, // Restaurar las horas reales a 0
       active: true,
     };
 
@@ -73,9 +77,14 @@ function DeveloperView() {
         subtask.id === subtaskId ? { ...subtask, completed: false, actualHours: 0 } : subtask
       );
       setSubtasks(updatedSubtasks);
+      setSnackbarMessage("Subtarea descompletada exitosamente.");
+        setSnackbarType("success");
     } else {
       console.error("Error al descompletar la subtarea");
+      setSnackbarMessage("Error al descompletar la subtarea.");
+        setSnackbarType("error");
     }
+    setOpenSnackbar(true);
   };
 
   // Función para enviar la actualización con las horas reales
@@ -104,10 +113,15 @@ function DeveloperView() {
         );
         setSubtasks(updatedSubtasks);
         setOpenCompletionDialog(false); // Cerrar el modal
+        setSnackbarMessage("Subtarea completada exitosamente.");
+        setSnackbarType("success");
       } else {
         console.error("Error al actualizar la subtarea");
+        setSnackbarMessage("Error al completar la subtarea.");
+        setSnackbarType("error");
       }
     }
+    setOpenSnackbar(true); // Mostrar el Snackbar
   };
 
   return (
@@ -158,8 +172,11 @@ function DeveloperView() {
             <>
               <h3>{taskDetails.title}</h3>
               <p>{taskDetails.task.description}</p>
+              <p><strong>Estado:</strong> {taskDetails.status}</p>
+              <p><strong>Progreso:</strong> {taskDetails.progress}</p>
               <p><strong>Sprint:</strong> {taskDetails.task.sprint ? `#${taskDetails.task.sprint.sprintNumber} (${taskDetails.task.sprint.startDate} - ${taskDetails.task.sprint.endDate})` : "No pertenece a ningún sprint"}</p>
               <p><strong>Horas Estimadas:</strong> {taskDetails.estimatedHours}</p>
+              <p><strong>Horas Reales:</strong> {taskDetails.completed ? taskDetails.actualHours : "N/A"}</p>
             </>
           )}
         </DialogContent>
@@ -193,6 +210,22 @@ function DeveloperView() {
           </Button>
         </DialogActions>
       </Dialog>
+
+
+
+      {/* Snackbar para mostrar mensajes */}
+      <Snackbar
+          open={openSnackbar}
+          autoHideDuration={3000} // Duración en milisegundos
+          onClose={() => setOpenSnackbar(false)}
+          >
+          <SnackbarContent
+              style={{
+              backgroundColor: snackbarType === "success" ? "green" : "red",
+              }}
+              message={snackbarMessage}
+          />
+      </Snackbar>
     </div>
   );
 }

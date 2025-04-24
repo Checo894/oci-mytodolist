@@ -78,6 +78,7 @@ public class SubtaskService {
             subtask.setTitle(updatedSubtask.getTitle());
             subtask.setCompleted(updatedSubtask.isCompleted());
             subtask.setAssignedDeveloperId(updatedSubtask.getAssignedDeveloperId());
+            subtask.setEstimatedHours(updatedSubtask.getEstimatedHours());
             if (updatedSubtask.isCompleted()) {
                 if (updatedSubtask.getActualHours() == null || updatedSubtask.getActualHours() <= 0) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);

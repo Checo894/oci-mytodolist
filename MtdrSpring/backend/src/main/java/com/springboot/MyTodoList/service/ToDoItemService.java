@@ -127,5 +127,14 @@ public class ToDoItemService {
     public List<ToDoItem> getBySprintId(Long sprintId) {
         return toDoItemRepository.findBySprintId(sprintId);
     }
+
+    public List<ToDoItem> getTasksWithoutSprint() {
+        return toDoItemRepository.findBySprintIsNull();
+    }
+    
+    public List<ToDoItem> getTasksWithoutSprintAndActive() {
+        return toDoItemRepository.findBySprintIsNullAndIsActiveTrue();
+    }
+    
     
 }
