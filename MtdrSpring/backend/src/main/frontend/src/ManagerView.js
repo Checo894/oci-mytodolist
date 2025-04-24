@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Button from "@mui/material/Button";
 import { Logout } from "@mui/icons-material";
 import SprintSection from "./SprintSection";
-//import TaskSection from "./TaskSection";
+import TaskSection from "./TaskSection";
 
 
 function ManagerView() {
