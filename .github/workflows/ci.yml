@@ -1,0 +1,36 @@
+name: Java CI 
+
+on:
+  push:
+    branches: [ setup-github-actions ]
+  pull_request:
+    branches: [ setup-github-actions ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Build with Maven
+      run: mvn -B package --file MtdrSpring/backend/pom.xml
+
+    - name: Run Tests
+      run: mvn test --file MtdrSpring/backend/pom.xml
+
+    - name: Lint Check (Checkstyle)
+      run: mvn checkstyle:checkstyle --file MtdrSpring/backend/pom.xml
+
+    - name: Format code (Google Java Format)
+      run: |
+        echo "Formateando código no automático en CI, recomendar agregar Spotless o Google Formatter en local"
+
+        
