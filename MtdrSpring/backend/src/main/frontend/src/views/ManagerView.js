@@ -1,3 +1,5 @@
+// Este es un cambio de prueba para verificar sincronización
+
 import React, { useState, useEffect } from "react";
 import { Tab, Tabs, Card, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Snackbar, SnackbarContent } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
@@ -40,7 +42,7 @@ function ManagerView() {
 
 
 
-    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+    //const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
 
     const history = useHistory();
