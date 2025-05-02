@@ -1,11 +1,10 @@
 package com.springboot.MyTodoList.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springboot.MyTodoList.model.Sprint;
-import com.springboot.MyTodoList.model.Subtask;
-import com.springboot.MyTodoList.model.ToDoItem;
-import com.springboot.MyTodoList.repository.SubtaskRepository;
-import com.springboot.MyTodoList.service.SubtaskService;
+import java.util.List;
+import java.util.Optional;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,17 +14,24 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.List;
-import java.util.Optional;
-
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.springboot.MyTodoList.model.Sprint;
+import com.springboot.MyTodoList.model.Subtask;
+import com.springboot.MyTodoList.model.ToDoItem;
+import com.springboot.MyTodoList.repository.SubtaskRepository;
+import com.springboot.MyTodoList.service.SubtaskService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class SubtaskControllerTests {
+public class SubtaskControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

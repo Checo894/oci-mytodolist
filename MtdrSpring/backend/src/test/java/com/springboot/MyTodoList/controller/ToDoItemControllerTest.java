@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class ToDoItemControllerTests {
+public class ToDoItemControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
