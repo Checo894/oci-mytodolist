@@ -18,11 +18,12 @@
     <description>Demo project for Spring Boot</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>11</java.version>
         <version.lib.ojdbc>21.1.0.0</version.lib.ojdbc>
         <frontend-src-dir>${project.basedir}/src/main/frontend</frontend-src-dir>
         <node.version>v16.13.2</node.version>
         <npm.version>8.1.2</npm.version>
+        <skip.frontend>true</skip.frontend>
     </properties>
 
     <dependencies>
@@ -81,30 +82,7 @@
 
     <build>
         <plugins>
-
-            <!-- Soporte para APIs en preview de Java 21 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <release>21</release>
-                    <compilerArgs>
-                        <arg>--enable-preview</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
-                <configuration>
-                    <argLine>--enable-preview</argLine>
-                </configuration>
-            </plugin>
-
-            <!-- Frontend (React) build -->
+            <!-- FRONTEND DESACTIVADO SI skip.frontend=true -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
@@ -114,7 +92,6 @@
                     <npmVersion>${npm.version}</npmVersion>
                     <workingDirectory>${frontend-src-dir}</workingDirectory>
                     <installDirectory>${project.build.directory}</installDirectory>
-                    <downloadRoot></downloadRoot>
                 </configuration>
                 <executions>
                     <execution>
@@ -122,68 +99,44 @@
                         <goals>
                             <goal>install-node-and-npm</goal>
                         </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <skip>${skip.frontend}</skip>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>npm install</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>install</arguments>
+                            <skip>${skip.frontend}</skip>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>npm run build</id>
                         <goals>
                             <goal>npm</goal>
                         </goals>
+                        <phase>generate-resources</phase>
                         <configuration>
                             <arguments>run build</arguments>
+                            <skip>${skip.frontend}</skip>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- Copiar build de React al backend -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>position-react-build</id>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.outputDirectory}/static</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${frontend-src-dir}/build</directory>
-                                    <filtering>false</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${project.parent.version}</version>
                 <configuration>
                     <mainClass>com.springboot.MyTodoList.MyTodoListApplication</mainClass>
-                    <jvmArguments>--enable-preview</jvmArguments>
                 </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>

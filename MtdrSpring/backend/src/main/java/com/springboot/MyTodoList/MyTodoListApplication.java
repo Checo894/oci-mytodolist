@@ -1,6 +1,6 @@
 package com.springboot.MyTodoList;
 
-import java.util.concurrent.StructuredTaskScope.Subtask;
+//import java.util.concurrent.StructuredTaskScope.Subtask;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +14,11 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import com.springboot.MyTodoList.controller.ToDoItemBotController;
-import com.springboot.MyTodoList.model.DeveloperStats;
-import com.springboot.MyTodoList.repository.DeveloperRepository;
 import com.springboot.MyTodoList.service.DeveloperService;
 import com.springboot.MyTodoList.service.DeveloperStatsService;
+import com.springboot.MyTodoList.service.SprintService;
 import com.springboot.MyTodoList.service.SubtaskService;
 import com.springboot.MyTodoList.service.ToDoItemService;
-import com.springboot.MyTodoList.service.SprintService;
 import com.springboot.MyTodoList.util.BotMessages;
 
 @SpringBootApplication
