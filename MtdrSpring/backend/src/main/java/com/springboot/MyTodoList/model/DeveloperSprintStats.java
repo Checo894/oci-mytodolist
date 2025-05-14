@@ -99,4 +99,19 @@ public class DeveloperSprintStats {
     public void setLastUpdatedTs(OffsetDateTime lastUpdatedTs) {
         this.lastUpdatedTs = lastUpdatedTs;
     }
+
+    public DeveloperSprintStats() {
+        // Constructor vacío
+    }
+
+    // Constructor matching the test case
+    public DeveloperSprintStats(DeveloperSprintStatsId id, Developer developer, Sprint sprint, int totalAssignedCount, int totalCompletedCount, double sumEstimatedHours, double sumActualHours) {
+        this.id = id;
+        this.developer = developer;
+        this.sprint = sprint;
+        this.totalAssignedCount = totalAssignedCount;
+        this.totalCompletedCount = totalCompletedCount;
+        this.sumEstimatedHours = sumEstimatedHours;
+        this.sumActualHours = sumActualHours;
+    }
 }
