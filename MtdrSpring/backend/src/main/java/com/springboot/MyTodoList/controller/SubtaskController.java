@@ -132,6 +132,7 @@ public class SubtaskController {
             dto.estimatedHours = s.getEstimatedHours();
             dto.actualHours = s.getActualHours();
             dto.completed = s.isCompleted();
+            dto.assignedDeveloperId = s.getAssignedDeveloperId();
 
             SubtaskDetailDTO.TaskInfo taskInfo = new SubtaskDetailDTO.TaskInfo();
             taskInfo.title = task.getTitle();

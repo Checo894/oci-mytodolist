@@ -82,7 +82,7 @@ body {
 /* Contenedor de subtareas */
 .subtasks-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-rows: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
   margin-top: 2rem;
   padding: 0 2rem;
@@ -131,6 +131,20 @@ body {
 .subtask-card button:hover {
   background-color: #115293;
 }
+
+/* Sección de subtareas (completa en ancho) */
+/* .subtasks-section {
+  margin: 2rem 2rem 4rem;
+} */
+
+/* Grid interno de tarjetas dentro de cada sección */
+.subtasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 
 /* Contenedor de reporte */
 .report-container {
@@ -347,3 +361,49 @@ h1 {
   gap: 1rem;
 }
 
+
+
+/* Estilo para la vista general */
+.general-view {
+  margin: 2rem;
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.general-view h3 {
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #333;
+}
+
+/* Espaciado entre secciones */
+.general-view > div {
+  margin-bottom: 3rem;
+}
+
+/* Tabla de resumen de horas y costos */
+.general-view table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.general-view th {
+  background-color: #f0f4f8;
+  border-bottom: 2px solid #ccc;
+  padding: 10px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.general-view td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.general-view tr:hover {
+  background-color: #f9f9f9;
+}

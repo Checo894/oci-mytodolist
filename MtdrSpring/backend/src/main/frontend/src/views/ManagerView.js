@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Tab, Tabs, Card, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Snackbar, SnackbarContent } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
-import {BarChart,Bar,PieChart,Pie,Cell,XAxis,YAxis,Tooltip,ResponsiveContainer,Legend,} from "recharts";
+import {BarChart,Bar,PieChart,Pie,Cell,XAxis,YAxis,Tooltip,ResponsiveContainer,Legend,CartesianGrid} from "recharts";
 
 
 function ManagerView() {
@@ -37,53 +37,193 @@ function ManagerView() {
     
     const [completedSubtasks, setCompletedSubtasks] = useState([]);
 
+    const [sprintStats, setSprintStats] = useState([]);
+    const [devSprintStats, setDevSprintStats] = useState([]);
 
 
 
-    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+    const COLORS = [
+      "#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28CFD", "#FF6699", "#82ca9d",
+      "#8884d8", "#d0ed57", "#a4de6c", "#ffc658", "#FFB6C1", "#7FFFD4", "#BA55D3",
+      "#FFD700", "#20B2AA", "#DC143C", "#4169E1", "#FF7F50", "#8A2BE2"
+    ];
+    
 
 
     const history = useHistory();
 
-    useEffect(() => {
-        const fetchSubtasks = async () => {
-            const developerId = localStorage.getItem("developerId");
-            const response = await fetch(`${process.env.REACT_APP_API_URL}subtasks/developer/${developerId}`);
-            const data = await response.json();
-            setSubtasks(data);
-        };
+    // useEffect(() => {
+    //     const fetchSubtasks = async () => {
+    //         const developerId = localStorage.getItem("developerId");
+    //         const response = await fetch(`${process.env.REACT_APP_API_URL}subtasks/developer/${developerId}`);
+    //         const data = await response.json();
+    //         setSubtasks(data);
+    //     };
     
-        const fetchDeveloperStats = async () => {
-            const developerId = localStorage.getItem("developerId");
-            const response = await fetch(`${process.env.REACT_APP_API_URL}developer-stats/${developerId}`);
-            const data = await response.json();
-            setDeveloperStats(data);
-        };
+    //     const fetchDeveloperStats = async () => {
+    //         const developerId = localStorage.getItem("developerId");
+    //         const response = await fetch(`${process.env.REACT_APP_API_URL}developer-stats/${developerId}`);
+    //         const data = await response.json();
+    //         setDeveloperStats(data);
+    //     };
 
-        const fetchTasks = async () => {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}todolist`);
-            const data = await response.json();
-            setTasks(data);
-        };
+    //     const fetchTasks = async () => {
+    //         const response = await fetch(`${process.env.REACT_APP_API_URL}todolist`);
+    //         const data = await response.json();
+    //         setTasks(data);
+    //     };
 
-        const fetchSprints = async () => {
-            const response = await fetch(`${process.env.REACT_APP_API_URL}sprints`);
-            const data = await response.json();
-            setSprints(data);
-        };
+    //     const fetchSprints = async () => {
+    //         const response = await fetch(`${process.env.REACT_APP_API_URL}sprints`);
+    //         const data = await response.json();
+    //         setSprints(data);
+    //     };
 
-        const fetchDevelopers = async () => {
-          const response = await fetch(`${process.env.REACT_APP_API_URL}developers`);
-          const data = await response.json();
-          setDevelopers(data);
-      };
+    //     const fetchDevelopers = async () => {
+    //       const response = await fetch(`${process.env.REACT_APP_API_URL}developers`);
+    //       const data = await response.json();
+    //       setDevelopers(data);
+    //     };
+
+    //     const fetchSprintStats = async () => {
+    //       try {
+    //         const response = await fetch(`${process.env.REACT_APP_API_URL}sprint-stats`);
+    //         const data = await response.json();
+    //         setSprintStats(data);
+    //       } catch (error) {
+    //         console.error("Error al obtener estadísticas de sprint:", error);
+    //       }
+    //     };
+
+    //     const fetchDevSprintStats = async () => {
+    //       try {
+    //         const response = await fetch(`${process.env.REACT_APP_API_URL}developer-sprint-stats`);
+    //         const data = await response.json();
+    //         setDevSprintStats(data);
+    //       } catch (error) {
+    //         console.error("Error al obtener estadísticas de developer por sprint:", error);
+    //       }
+    //     };
   
-        fetchSubtasks();
-        fetchDevelopers();
-        fetchDeveloperStats();
-        fetchTasks();
-        fetchSprints();
-    }, []);
+    //     fetchSubtasks();
+    //     fetchDevelopers();
+    //     fetchDeveloperStats();
+    //     fetchTasks();
+    //     fetchSprints();
+    //     fetchSprintStats();
+    //     fetchDevSprintStats();
+    // }, []);
+
+    // useEffect(() => {
+    //   const fetchReportData = async () => {
+    //     if (!selectedSprint) return;
+    
+    //     try {
+    //       let response;
+    //       if (selectedDeveloper === "equipo") {
+    //         response = await fetch(`${process.env.REACT_APP_API_URL}sprint-stats/${selectedSprint}`);
+    //         const data = await response.json();
+    //         setReportData({
+    //           assigned: data.totalSubtasks,
+    //           completed: data.totalCompleted,
+    //           estimated: data.sumEstimatedHours,
+    //           actual: data.sumActualHours,
+    //           lastUpdatedTs: data.lastUpdatedTs,
+    //         });
+    //       } else {
+    //         response = await fetch(`${process.env.REACT_APP_API_URL}developer-sprint-stats/developer/${selectedDeveloper}/sprint/${selectedSprint}`);
+    //         const [data] = await response.json();
+    //         if (data) {
+    //           setReportData({
+    //             assigned: data.totalAssignedCount,
+    //             completed: data.totalCompletedCount,
+    //             estimated: data.sumEstimatedHours,
+    //             actual: data.sumActualHours,
+    //             lastUpdatedTs: data.lastUpdatedTs,
+    //           });
+    //         } else {
+    //           setReportData(null); // No hay datos
+    //         }
+    //       }
+    //     } catch (error) {
+    //       console.error("Error al obtener los datos del reporte:", error);
+    //       setReportData(null);
+    //     }  
+    //   };
+    //   const fetchCompletedSubtasks = async () => {
+    //     try {
+    //       const response = await fetch(`${process.env.REACT_APP_API_URL}subtasks/details`);
+    //       const data = await response.json();
+    //       // Filtrar por sprint seleccionado y solo completadas
+    //       const filtered = data.filter(
+    //         (subtask) =>
+    //           subtask.completed === true &&
+    //           subtask.task.sprint &&
+    //           subtask.task.sprint.id === selectedSprint
+    //       );
+    //       setCompletedSubtasks(filtered);
+    //     } catch (error) {
+    //       console.error("Error al obtener subtareas completadas:", error);
+    //     }
+    //   };
+    
+    //   fetchReportData();
+    //   fetchCompletedSubtasks();
+    // }, [selectedDeveloper, selectedSprint]);
+    
+
+
+    const fetchSubtasks = async () => {
+        const developerId = localStorage.getItem("developerId");
+        const response = await fetch(`${process.env.REACT_APP_API_URL}subtasks/developer/${developerId}`);
+        const data = await response.json();
+        setSubtasks(data);
+    };
+
+    const fetchDeveloperStats = async () => {
+        const developerId = localStorage.getItem("developerId");
+        const response = await fetch(`${process.env.REACT_APP_API_URL}developer-stats/${developerId}`);
+        const data = await response.json();
+        setDeveloperStats(data);
+    };
+
+    const fetchTasks = async () => {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}todolist`);
+        const data = await response.json();
+        setTasks(data);
+    };
+
+    const fetchSprints = async () => {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}sprints`);
+        const data = await response.json();
+        setSprints(data);
+    };
+
+    const fetchDevelopers = async () => {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}developers`);
+      const data = await response.json();
+      setDevelopers(data);
+    };
+
+    const fetchSprintStats = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}sprint-stats`);
+        const data = await response.json();
+        setSprintStats(data);
+      } catch (error) {
+        console.error("Error al obtener estadísticas de sprint:", error);
+      }
+    };
+
+    const fetchDevSprintStats = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}developer-sprint-stats`);
+        const data = await response.json();
+        setDevSprintStats(data);
+      } catch (error) {
+        console.error("Error al obtener estadísticas de developer por sprint:", error);
+      }
+    };
 
     useEffect(() => {
       const fetchReportData = async () => {
@@ -121,6 +261,7 @@ function ManagerView() {
           setReportData(null);
         }  
       };
+  
       const fetchCompletedSubtasks = async () => {
         try {
           const response = await fetch(`${process.env.REACT_APP_API_URL}subtasks/details`);
@@ -137,11 +278,35 @@ function ManagerView() {
           console.error("Error al obtener subtareas completadas:", error);
         }
       };
+
+
+      if (activeTab === 0) {
+        fetchSubtasks();
+        fetchDevelopers();
+        fetchTasks();
+        fetchSprints();
+      } else if (activeTab === 1) {
+        fetchDeveloperStats();
+      } else if (activeTab === 2) {
+        fetchTasks();
+      } else if (activeTab === 3) {
+        fetchSprints();
+      } else if (activeTab === 4) {
+        fetchReportData();
+        fetchCompletedSubtasks();
+      } else if (activeTab === 5) {
+        fetchSprints();
+        fetchSprintStats();
+        fetchDevSprintStats();
+      }
+    }, [activeTab, selectedDeveloper, selectedSprint]);
     
-      fetchReportData();
-      fetchCompletedSubtasks();
-    }, [selectedDeveloper, selectedSprint]);
-    
+
+
+
+
+
+
 
     const handleViewSubtaskDetails = async (subtaskId) => {
         try {
@@ -264,6 +429,8 @@ function ManagerView() {
             setTasks([...tasks, data]);
             setTaskOpenCreateDialog(false);
             setNewTask({ title: "", description: "" }); // Reset form
+            setSnackbarMessage("Tarea creada exitosamente.");
+            setSnackbarType("success");
         } else {
             console.error("Error al crear la tarea");
             setSnackbarMessage("Error al crear la tarea.");
@@ -353,6 +520,75 @@ function ManagerView() {
         setOpenSnackbar(true);
     };
 
+    const formattedDevSprintData = () => {
+      const sprintMap = {};
+    
+      devSprintStats.forEach((entry) => {
+        const sprintNumber = entry.sprint.sprintNumber;
+        const sprintKey = `Sprint ${sprintNumber}`;
+        const devName = entry.developer.name;
+        const hours = entry.sumActualHours;
+    
+        if (!sprintMap[sprintNumber]) {
+          sprintMap[sprintNumber] = { name: sprintKey, sprintNumber };
+        }
+    
+        sprintMap[sprintNumber][devName] = hours;
+      });
+    
+      // Ordenamos por sprintNumber (numérico) y luego removemos esa propiedad
+      return Object.values(sprintMap)
+        .sort((a, b) => a.sprintNumber - b.sprintNumber)
+        .map(({ sprintNumber, ...rest }) => rest);
+    };
+    
+    const formattedCompletedTasksData = () => {
+      const sprintMap = {};
+    
+      devSprintStats.forEach((entry) => {
+        const sprintNumber = entry.sprint.sprintNumber;
+        const sprintKey = `Sprint ${sprintNumber}`;
+        const devName = entry.developer.name;
+        const completedTasks = entry.totalCompletedCount;
+    
+        if (!sprintMap[sprintNumber]) {
+          sprintMap[sprintNumber] = { name: sprintKey, sprintNumber };
+        }
+    
+        sprintMap[sprintNumber][devName] = completedTasks;
+      });
+    
+      return Object.values(sprintMap)
+        .sort((a, b) => a.sprintNumber - b.sprintNumber)
+        .map(({ sprintNumber, ...rest }) => rest);
+    };    
+
+    const getTotalHoursAndCostPerDeveloper = () => {
+      const developerTotals = {};
+    
+      devSprintStats.forEach((entry) => {
+        const devName = entry.developer.name;
+        const hours = entry.sumActualHours;
+    
+        if (!developerTotals[devName]) {
+          developerTotals[devName] = 0;
+        }
+    
+        developerTotals[devName] += hours;
+      });
+    
+      return Object.entries(developerTotals).map(([devName, totalHours]) => ({
+        developer: devName,
+        totalHours: totalHours.toFixed(2),
+        totalCost: `$${(totalHours * 25).toFixed(2)}`
+      }));
+    };
+
+    const pendingSubtasks = subtasks.filter(sub => !sub.completed);
+    const completedSubtasksSection = subtasks.filter(sub => sub.completed);
+
+    
+
     return (
         <div>
         <h1 className="manager-header">Bienvenido, {localStorage.getItem("name")}</h1>
@@ -364,24 +600,47 @@ function ManagerView() {
             <Tab label="Administración de Tareas" />
             <Tab label="Administración de Sprints" />
             <Tab label="Reportes" />
+            <Tab label="Vista General" />
         </Tabs>
 
         {/* Subtasks Asignadas --------------------------------------------------------------------------------------------------------*/}
         {activeTab === 0 && (
             <div className="subtasks-container">
-            {subtasks.map((subtask) => (
-                <Card key={subtask.id} className="subtask-card">
-                <h3>{subtask.title}</h3>
-                <p>{subtask.completed ? "Completada" : "Pendiente"}</p>
-                <Button onClick={() => handleViewSubtaskDetails(subtask.id)}>Ver Detalles</Button>
-                {!subtask.completed && (
+            <div className="subtasks-section">
+            <h2>Subtareas Pendientes ({pendingSubtasks.length})</h2>
+            <div className="subtasks-grid">
+              {pendingSubtasks.length > 0 ? (
+                pendingSubtasks.map((subtask) => (
+                  <Card key={subtask.id} className="subtask-card">
+                    <h3>{subtask.title}</h3>
+                    <p>Pendiente</p>
+                    <Button onClick={() => handleViewSubtaskDetails(subtask.id)}>Ver Detalles</Button>
                     <Button onClick={() => handleCompleteSubtask(subtask.id)}>Marcar como Completada</Button>
-                )}
-                {subtask.completed && (
+                  </Card>
+                ))
+              ) : (
+                <p>No hay subtareas pendientes.</p>
+              )}
+            </div>
+          </div>
+
+          <div className="subtasks-section">
+          <h2>Subtareas Completadas ({completedSubtasksSection.length})</h2>
+            <div className="subtasks-grid">
+              {completedSubtasksSection.length > 0 ? (
+                completedSubtasksSection.map((subtask) => (
+                  <Card key={subtask.id} className="subtask-card">
+                    <h3>{subtask.title}</h3>
+                    <p>Completada</p>
+                    <Button onClick={() => handleViewSubtaskDetails(subtask.id)}>Ver Detalles</Button>
                     <Button onClick={() => handleUncompleteSubtask(subtask.id)}>Descompletar</Button>
-                )}
-                </Card>
-            ))}
+                  </Card>
+                ))
+              ) : (
+                <p>No hay subtareas completadas.</p>
+              )}
+            </div>
+          </div>
             </div>
         )}
 
@@ -616,6 +875,10 @@ function ManagerView() {
         </DialogActions>
       </Dialog>
 
+
+
+    
+      {/* Reportes ---------------------------------------------------------------------------------------------------------------*/}
       {activeTab === 4 && (
       <div className="report-filter">
       <h2>Reportes por Sprint</h2>
@@ -728,6 +991,7 @@ function ManagerView() {
             <thead>
               <tr>
                 <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Subtarea</th>
+                <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Desarrollador</th>
                 <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Tarea</th>
                 <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Inicio Sprint</th>
                 <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Fin Sprint</th>
@@ -739,6 +1003,9 @@ function ManagerView() {
               {completedSubtasks.map((sub) => (
                 <tr key={sub.id}>
                   <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.title}</td>
+                  <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>
+                    {developers.find(dev => dev.id === sub.assignedDeveloperId)?.name || "N/A"}
+                  </td>
                   <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.task.title}</td>
                   <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.task.sprint.startDate}</td>
                   <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{sub.task.sprint.endDate}</td>
@@ -754,6 +1021,95 @@ function ManagerView() {
 
     </div>
      )}
+
+      {/* Vista General ----------------------------------------------------------------------------------------------------------*/}
+      {activeTab === 5 && (
+      <div className="general-view">
+        {/* <h2>Vista General del Proyecto</h2>
+        <p>Esta es la vista general de las estadísticas del proyecto y sus desarrolladores.</p> */}
+
+        {/* Gráfica de Horas Invertidas por Sprint */}
+        <div style={{ marginTop: "2rem" }}>
+          <h3>Horas Invertidas por Sprint</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={sprintStats.map((sprint) => ({
+                name: `Sprint ${sprint.sprintId}`,
+                horas: sprint.sumActualHours,
+              }))}
+              margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis label={{ value: 'Horas', angle: -90, position: 'insideLeft' }} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="horas" fill="#c084fc" name="Hours Invested" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div style={{ marginTop: "4rem" }}>
+        <h3>Horas Trabajadas por Developer por Sprint</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={formattedDevSprintData()}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis label={{ value: "Horas trabajadas", angle: -90, position: "insideLeft" }} />
+            <Tooltip />
+            <Legend />
+            {Array.from(
+              new Set(devSprintStats.map((entry) => entry.developer.name))
+            ).map((devName, index) => (
+              <Bar key={devName} dataKey={devName} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div style={{ marginTop: "4rem" }}>
+        <h3>Tareas Completadas por Developer por Sprint</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={formattedCompletedTasksData()}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis label={{ value: "Tareas completadas", angle: -90, position: "insideLeft" }} />
+            <Tooltip />
+            <Legend />
+            {Array.from(new Set(devSprintStats.map((entry) => entry.developer.name)))
+              .map((devName, index) => (
+                <Bar key={devName} dataKey={devName} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <div style={{ marginTop: "4rem" }}>
+        <h3>Horas Totales y Costo por Developer</h3>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Developer</th>
+              <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Horas Totales</th>
+              <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Costo Total (USD)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {getTotalHoursAndCostPerDeveloper().map((row) => (
+              <tr key={row.developer}>
+                <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{row.developer}</td>
+                <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{row.totalHours}</td>
+                <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{row.totalCost}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+
+      </div>
+      
+    )}
+
+
+      {/* Botón para cerrar sesión */}
 
 
       {/* Snackbar para mostrar mensajes */}

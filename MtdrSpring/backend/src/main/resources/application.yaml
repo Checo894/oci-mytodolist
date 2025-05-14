@@ -14,3 +14,6 @@ spring:
     user:
       name: ${ui_username}
       password: ${ui_password}
+server:
+  address: 0.0.0.0
+  port: 8080
