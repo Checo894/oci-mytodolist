@@ -18,6 +18,14 @@ The lab executes scripts that require the following software to run properly: (T
 
 ## Local Build and Deployment
 
+###  Requirements
+
+Before building and running the project locally, ensure the following requirements are met:
+
+- [Docker](https://www.docker.com/) installed and running (recommended version 20.x or higher).
+- Oracle Cloud Database instance running and accessible.
+- Oracle Wallet files included in the Docker image (already pre-packaged if you're using the provided Dockerfile).
+
 Follow these steps to clone, build, and run the project locally using Docker:
 
 #### 1. Clone the repository  
