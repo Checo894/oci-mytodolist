@@ -1,5 +1,5 @@
+// Sprint.java
 package com.springboot.MyTodoList.model;
-
 import javax.persistence.*;
 import java.time.LocalDate;
 
@@ -20,23 +20,18 @@ public class Sprint {
     @Column(name = "END_DATE", nullable = false)
     private LocalDate endDate;
 
-    public Sprint() {}
+    protected Sprint() {
+        // for JPA
+    }
 
-    public Sprint(Long id, int sprintNumber, LocalDate startDate, LocalDate endDate) {
-        this.id = id;
+    public Sprint(int sprintNumber, LocalDate startDate, LocalDate endDate) {
         this.sprintNumber = sprintNumber;
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
-    // Getters y Setters
-
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public int getSprintNumber() {
@@ -65,11 +60,9 @@ public class Sprint {
 
     @Override
     public String toString() {
-        return "Sprint{" +
-                "id=" + id +
-                ", sprintNumber=" + sprintNumber +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                '}';
+        return String.format(
+            "Sprint{id=%d, number=%d, start=%s, end=%s}",
+            id, sprintNumber, startDate, endDate
+        );
     }
 }
