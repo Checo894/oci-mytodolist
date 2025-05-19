@@ -64,7 +64,7 @@ public class DeveloperController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDeveloper(@PathVariable Long id, @RequestBody Developer updatedDev) {
-        Developer updated = developerService.updateDeveloper(id, updatedDev);
+        Developer updated = developerService.partialUpdateDeveloper(id, updatedDev);
         if (updated != null) {
             return ResponseEntity.ok(updated);
         }

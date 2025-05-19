@@ -21,7 +21,7 @@ public class DeveloperService {
     }
 
     public Developer getByEmail(String email) {
-        return developerRepository.findByEmail(email);
+        return developerRepository.findByEmail(email).orElse(null);
     }
 
     public Developer createDeveloper(Developer developer) {
@@ -30,13 +30,13 @@ public class DeveloperService {
     }
 
     public boolean authenticate(String email, String passwordPlaintext) {
-        Developer developer = developerRepository.findByEmail(email);
+        Developer developer = developerRepository.findByEmail(email).orElse(null);
         String hashedInput = HashUtil.sha256(passwordPlaintext);
         return developer != null && developer.getPasswordHash().equals(hashedInput);
     }    
 
     public String getRoleByEmail(String email) {
-        Developer developer = developerRepository.findByEmail(email);
+        Developer developer = developerRepository.findByEmail(email).orElse(null);
         return developer != null ? developer.getRole() : null;
     }
     
@@ -51,10 +51,10 @@ public class DeveloperService {
             normalized = "+" + normalized;
         }
     
-        return developerRepository.findByPhoneNumber(normalized);
+        return developerRepository.findByPhoneNumber(normalized).orElse(null);
     }
     
-    public Developer updateDeveloper(Long id, Developer updated) {
+    public Developer partialUpdateDeveloper(Long id, Developer updated) {
         Optional<Developer> devOpt = developerRepository.findById(id);
         if (devOpt.isPresent()) {
             Developer dev = devOpt.get();
