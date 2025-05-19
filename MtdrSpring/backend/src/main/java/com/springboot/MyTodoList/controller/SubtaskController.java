@@ -1,20 +1,28 @@
 package com.springboot.MyTodoList.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springboot.MyTodoList.dto.SubtaskDetailDTO;
 import com.springboot.MyTodoList.model.Sprint;
 import com.springboot.MyTodoList.model.Subtask;
 import com.springboot.MyTodoList.model.ToDoItem;
 import com.springboot.MyTodoList.repository.SubtaskRepository;
 import com.springboot.MyTodoList.service.SubtaskService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/subtasks")
@@ -57,7 +65,7 @@ public class SubtaskController {
         return subtaskService.deleteSubtask(id);
     }
 
-    // ⚠️ Este método no está filtrado por isActive. Solo para uso administrativo.
+    // This method is not filtered by isActive. For administrative use only.
     @GetMapping("/all")
     public List<Subtask> getAllRawSubtasks() {
         return subtaskService.getAllSubtasksIncludingInactive();
@@ -121,7 +129,7 @@ public class SubtaskController {
 
         for (Subtask s : subtasks) {
             if (!s.isActive()) {
-                continue; // Si la subtarea está desactivada, la saltamos
+                continue; 
             }
 
             ToDoItem task = s.getMainTask();
@@ -149,11 +157,10 @@ public class SubtaskController {
             }
 
             dto.task = taskInfo;
-            response.add(dto);  // Agregar los detalles de la subtarea a la respuesta
+            response.add(dto);  
         }
 
-        return ResponseEntity.ok(response);  // Devolver todas las subtareas con sus detalles
-    }
+        return ResponseEntity.ok(response);  //Return all subtasks with their details
 
 
 }

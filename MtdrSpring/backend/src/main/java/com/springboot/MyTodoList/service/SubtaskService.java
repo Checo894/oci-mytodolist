@@ -1,18 +1,18 @@
 package com.springboot.MyTodoList.service;
 
-import com.springboot.MyTodoList.model.Subtask;
-import com.springboot.MyTodoList.model.ToDoItem;
-import com.springboot.MyTodoList.repository.SubtaskRepository;
-import com.springboot.MyTodoList.repository.ToDoItemRepository;
+import java.util.List;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.Optional;
+import com.springboot.MyTodoList.model.Subtask;
+import com.springboot.MyTodoList.repository.SubtaskRepository;
+import com.springboot.MyTodoList.repository.ToDoItemRepository;
 
 @Service
 public class SubtaskService {
@@ -25,17 +25,15 @@ public class SubtaskService {
     @Autowired
     private ToDoItemRepository toDoItemRepository;
 
-    // 🔄 ahora solo devuelve subtareas activas
+
     public List<Subtask> findAll() {
-        return subtaskRepository.findByIsActiveTrue();
+        return subtaskRepository.findActiveSubtask();
     }
 
-    // 🔄 ahora solo devuelve subtareas activas por tarea
     public List<Subtask> findByMainTaskId(Long mainTaskId) {
         return subtaskRepository.findByMainTaskIdAndIsActiveTrue(mainTaskId);
     }
 
-    // 🔄 se valida que esté activa
     public ResponseEntity<Subtask> getSubtaskById(Long id) {
         Optional<Subtask> subtask = subtaskRepository.findById(id);
         if (subtask.isPresent() && subtask.get().isActive()) {
@@ -46,28 +44,28 @@ public class SubtaskService {
 
     public ResponseEntity<?> addSubtask(Long mainTaskId, Subtask subtask) {
         try {
-            logger.info("Intentando agregar subtarea para mainTaskId: {}", mainTaskId);
+            logger.info("Trying to add subtask for mainTaskId: {}", mainTaskId);
 
             Optional<ToDoItem> mainTask = toDoItemRepository.findById(mainTaskId);
             if (!mainTask.isPresent()) {
-                logger.error("Tarea principal con ID {} no encontrada", mainTaskId);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tarea principal no encontrada");
+                logger.error("Main task with ID {} ​​not found", mainTaskId);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Main task not found");
             }
 
             if (subtask.getEstimatedHours() == null || subtask.getEstimatedHours() < 0 || subtask.getEstimatedHours() > 4) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("⚠️ Las horas estimadas deben estar entre 0.0 y 4.0");
+                    .body("⚠️ Estimated hours should be between 0.0 and 4.0");
             }            
 
             subtask.setMainTask(mainTask.get());
-            subtask.setActive(true); // 🔄 aseguramos que se cree como activa
-            logger.info("Subtarea antes de guardarse: {}", subtask);
+            subtask.setActive(true); 
+            logger.info("Subtask before saving: {}", subtask);
             Subtask savedSubtask = subtaskRepository.save(subtask);
-            logger.info("Subtarea guardada correctamente: {}", savedSubtask);
+            logger.info("Subtask saved successfully: {}", savedSubtask);
             return new ResponseEntity<>(savedSubtask, HttpStatus.CREATED);
         } catch (Exception e) {
-            logger.error("Error al crear la subtarea: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al crear la subtarea: " + e.getMessage());
+            logger.error("Error creating subtask: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error creating subtask: " + e.getMessage());
         }
     }
 
@@ -90,20 +88,20 @@ public class SubtaskService {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    // 🔄 cambio a borrado lógico
+    
     public ResponseEntity<String> deleteSubtask(Long id) {
         Optional<Subtask> optionalSubtask = subtaskRepository.findById(id);
         if (optionalSubtask.isPresent() && optionalSubtask.get().isActive()) {
             Subtask subtask = optionalSubtask.get();
             subtask.setActive(false);
             subtaskRepository.save(subtask);
-            return new ResponseEntity<>("Subtarea desactivada correctamente", HttpStatus.OK);
+            return new ResponseEntity<>("Subtask desactivated succesfully", HttpStatus.OK);
         }
-        return new ResponseEntity<>("Subtarea no encontrada", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Subtask not found", HttpStatus.NOT_FOUND);
     }
 
     public List<Subtask> getAllSubtasksIncludingInactive() {
-        return subtaskRepository.findAll(); // sin filtro
+        return subtaskRepository.findAll(); 
     }
 
     public List<Subtask> getSubtasksByDeveloper(Long developerId) {
