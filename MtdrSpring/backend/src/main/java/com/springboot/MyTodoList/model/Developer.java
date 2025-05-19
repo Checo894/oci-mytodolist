@@ -1,3 +1,5 @@
+// clean-up
+
 package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
