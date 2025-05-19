@@ -171,7 +171,7 @@ public class DeveloperControllerTests {
         Long developerId = 1L;
         Developer updatedDev = new Developer(developerId, "Updated Name", "1234567890", "updated@domain.com", "updatedHash", "developer");
 
-        Mockito.when(developerService.updateDeveloper(eq(developerId), any(Developer.class))).thenReturn(updatedDev);
+        Mockito.when(developerService.partialUpdateDeveloper(eq(developerId), any(Developer.class))).thenReturn(updatedDev);
 
         String requestBody = "{"
                 + "\"name\": \"Updated Name\","
@@ -196,7 +196,7 @@ public class DeveloperControllerTests {
         // Arrange
         Long developerId = 99L;
 
-        Mockito.when(developerService.updateDeveloper(eq(developerId), any(Developer.class))).thenReturn(null);
+        Mockito.when(developerService.partialUpdateDeveloper(eq(developerId), any(Developer.class))).thenReturn(null);
 
         String requestBody = "{"
                 + "\"name\": \"Someone\","

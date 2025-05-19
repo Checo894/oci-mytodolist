@@ -1,5 +1,3 @@
-// clean-up
-
 package com.springboot.MyTodoList.model;
 
 import javax.persistence.*;
@@ -7,6 +5,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "DEVELOPERS")
 public class Developer {
+
+    enum Role { developer, projectmanager }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +24,7 @@ public class Developer {
     @Column(name = "PASSWORD_HASH", nullable = false)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "ROLE", nullable = false)
     private String role = "developer"; // default
 
