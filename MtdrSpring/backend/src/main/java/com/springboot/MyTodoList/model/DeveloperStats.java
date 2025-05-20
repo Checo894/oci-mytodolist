@@ -3,6 +3,10 @@ package com.springboot.MyTodoList.model;
 import javax.persistence.*;
 import java.time.OffsetDateTime;
 
+/**
+ * Entity representing developer statistics in the system.
+ */
+
 @Entity
 @Table(name = "DEVELOPER_STATS")
 public class DeveloperStats {
@@ -25,8 +29,6 @@ public class DeveloperStats {
 
     @Column(name = "LAST_UPDATED_TS")
     private OffsetDateTime lastUpdatedTs;
-
-    // Getters y setters
 
     public Long getDeveloperId() {
         return developerId;
