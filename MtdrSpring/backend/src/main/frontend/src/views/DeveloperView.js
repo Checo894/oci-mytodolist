@@ -125,6 +125,9 @@ function DeveloperView() {
     setOpenSnackbar(true); // Mostrar el Snackbar
   };
 
+  const pendingSubtasks = subtasks.filter(sub => !sub.completed);
+  const completedSubtasksSection = subtasks.filter(sub => sub.completed);
+
   return (
     <div>
       <h1 className="developer-header">Bienvenido, {localStorage.getItem("name")}</h1>
@@ -137,21 +140,43 @@ function DeveloperView() {
 
       {/* Subtasks Asignadas */}
       {activeTab === 0 && (
-        <div className="subtasks-container">
-          {subtasks.map((subtask) => (
-            <Card key={subtask.id} className="subtask-card">
-              <h3>{subtask.title}</h3>
-              <p>{subtask.completed ? "Completada" : "Pendiente"}</p>
-              <Button onClick={() => handleViewDetails(subtask.id)}>Ver Detalles</Button>
-              {!subtask.completed && (
-                <Button onClick={() => handleCompleteSubtask(subtask.id)}>Marcar como Completada</Button>
-              )}
-              {subtask.completed && (
-                <Button onClick={() => handleUncompleteSubtask(subtask.id)}>Descompletar</Button>
-              )}
-            </Card>
-          ))}
+          <div className="subtasks-container">
+          <div className="subtasks-section">
+          <h2>Subtareas Pendientes ({pendingSubtasks.length})</h2>
+          <div className="subtasks-grid">
+            {pendingSubtasks.length > 0 ? (
+              pendingSubtasks.map((subtask) => (
+                <Card key={subtask.id} className="subtask-card">
+                  <h3>{subtask.title}</h3>
+                  <p>Pendiente</p>
+                  <Button onClick={() => handleViewDetails(subtask.id)}>Ver Detalles</Button>
+                  <Button onClick={() => handleCompleteSubtask(subtask.id)}>Marcar como Completada</Button>
+                </Card>
+              ))
+            ) : (
+              <p>No hay subtareas pendientes.</p>
+            )}
+          </div>
         </div>
+
+        <div className="subtasks-section">
+        <h2>Subtareas Completadas ({completedSubtasksSection.length})</h2>
+          <div className="subtasks-grid">
+            {completedSubtasksSection.length > 0 ? (
+              completedSubtasksSection.map((subtask) => (
+                <Card key={subtask.id} className="subtask-card">
+                  <h3>{subtask.title}</h3>
+                  <p>Completada</p>
+                  <Button onClick={() => handleViewDetails(subtask.id)}>Ver Detalles</Button>
+                  <Button onClick={() => handleUncompleteSubtask(subtask.id)}>Descompletar</Button>
+                </Card>
+              ))
+            ) : (
+              <p>No hay subtareas completadas.</p>
+            )}
+          </div>
+        </div>
+          </div>
       )}
 
       {/* Reporte Personal */}

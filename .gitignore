@@ -48,3 +48,5 @@ frontend/package-lock.json
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
 frontend/yarn-error.log*
+
+!backend/target/MyTodoList-0.0.1-SNAPSHOT.jar
