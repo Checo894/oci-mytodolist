@@ -13,7 +13,7 @@ steps:
       export OCIR_REGION=mx-queretaro-1.ocir.io
       export NAMESPACE=axnobyqhwayx
       export REPO_NAME=chatbotapp
-      export IMAGE_TAG=sprint4
+      export IMAGE_TAG=sprint4.1
 
       echo "Realizando docker login..."
       docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p '6XZl7aY(S#xb:8Z<+)_1'
