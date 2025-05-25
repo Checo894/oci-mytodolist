@@ -13,7 +13,7 @@ steps:
       export OCIR_REGION=mx-queretaro-1.ocir.io
       export NAMESPACE=axnobyqhwayx
       export REPO_NAME=chatbotapp
-      export IMAGE_TAG=sprint4.0
+      export IMAGE_TAG=sprint4.2
 
       echo "Realizando docker login..."
       docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p '6XZl7aY(S#xb:8Z<+)_1'
@@ -40,7 +40,7 @@ steps:
       oci devops deployment create-ode-deployment \
         --project-id $PROJECT_OCID \
         --deploy-pipeline-id $DEPLOYMENT_PIPELINE_OCID \
-        --display-name "Auto-deploy sprint4.0" \
-        --deployment-arguments '[{"name":"chatbot_image_version","value":"sprint4.0"}]'
+        --display-name "Auto-deploy sprint4.2" \
+        --deployment-arguments '[{"name":"chatbot_image_version","value":"sprint4.2"}]'
       echo "Despliegue automático iniciado correctamente."
       
