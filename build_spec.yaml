@@ -13,7 +13,7 @@ steps:
       export OCIR_REGION=mx-queretaro-1.ocir.io
       export NAMESPACE=axnobyqhwayx
       export REPO_NAME=chatbotapp
-      export IMAGE_TAG=sprint4.1
+      export IMAGE_TAG=sprint4.0
 
       echo "Realizando docker login..."
       docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p '6XZl7aY(S#xb:8Z<+)_1'
@@ -28,3 +28,19 @@ steps:
       echo "Push completado."
 
       echo "Build finalizado correctamente."
+
+ - type: Command
+    name: Trigger Deployment Pipeline
+    command: |
+      echo "Iniciando despliegue automático en Deployment Pipeline"
+      export DEPLOYMENT_PIPELINE_OCID=ocid1.devopsdeploypipeline.oc1.mx-queretaro-1.amaaaaaayn4rm2aargvt55t22keq7fytxvhjrxi26jfvtfpizyie34bhpasq
+      export PROJECT_OCID=ocid1.devopsproject.oc1.mx-queretaro-1.amaaaaaayn4rm2aal7czef6bnfnxl4bmhrx4zw7xyb2hyhduwywwkpmst4qq
+
+      # Llama a OCI CLI para crear el despliegue
+      oci devops deployment create-ode-deployment \
+        --project-id $PROJECT_OCID \
+        --deploy-pipeline-id $DEPLOYMENT_PIPELINE_OCID \
+        --display-name "Auto-deploy sprint4.0" \
+        --deployment-arguments '[{"name":"chatbot_image_version","value":"sprint4.0"}]'
+      echo "Despliegue automático iniciado correctamente."
+      
