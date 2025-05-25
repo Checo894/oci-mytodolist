@@ -16,8 +16,3 @@ steps:
       docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p 's8URjEf5{f12DK[ZM8sc'
       docker build -f MtdrSpring/backend/dockerfile --platform linux/amd64 -t $OCIR_REGION/$NAMESPACE/$REPO_NAME:$IMAGE_TAG .
       docker push $OCIR_REGION/$NAMESPACE/$REPO_NAME:$IMAGE_TAG
-
-outputArtifacts:
-  - name: image_tag
-    type: STRING
-    value: ${BUILDRUN_HASH}
