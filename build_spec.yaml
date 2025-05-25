@@ -16,7 +16,7 @@ steps:
       export IMAGE_TAG=${BUILDRUN_HASH}
 
       echo "Realizando docker login..."
-      docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p 's8URjEf5{f12DK[ZM8sc}'
+      docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' --password-stdin 6XZl7aY(S#xb:8Z<+)_1
       echo "Docker login exitoso."
 
       echo "Construyendo imagen Docker..."
