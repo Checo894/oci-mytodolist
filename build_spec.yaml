@@ -7,12 +7,24 @@ steps:
   - type: Command
     name: Build and Push Docker Image
     command: |
-      echo "Construyendo y subiendo imagen Docker a OCIR"
+      set -e  # Detiene la ejecución si ocurre algún error
+      echo "Iniciando construcción y subida de imagen Docker a OCIR"
+
       export OCIR_REGION=mx-queretaro-1.ocir.io
       export NAMESPACE=axnobyqhwayx
       export REPO_NAME=chatbotapp
       export IMAGE_TAG=${BUILDRUN_HASH}
 
-      docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p 's8URjEf5{f12DK[ZM8sc'
-      docker build -f MtdrSpring/backend/dockerfile --platform linux/amd64 -t $OCIR_REGION/$NAMESPACE/$REPO_NAME:$IMAGE_TAG .
+      echo "Realizando docker login..."
+      docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p 's8URjEf5{f12DK[ZM8sc}'
+      echo "Docker login exitoso."
+
+      echo "Construyendo imagen Docker..."
+      docker build -f MtdrSpring/backend/dockerfile --platform linux/amd64 -t $OCIR_REGION/$NAMESPACE/$REPO_NAME:$IMAGE_TAG MtdrSpring/backend/
+      echo "Construcción de imagen Docker completada."
+
+      echo "Realizando push a OCIR..."
       docker push $OCIR_REGION/$NAMESPACE/$REPO_NAME:$IMAGE_TAG
+      echo "Push completado."
+
+      echo "Build finalizado correctamente."
