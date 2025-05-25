@@ -29,7 +29,7 @@ steps:
 
       echo "Build finalizado correctamente."
 
- - type: Command
+  - type: Command
     name: Trigger Deployment Pipeline
     command: |
       echo "Iniciando despliegue automático en Deployment Pipeline"
