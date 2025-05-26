@@ -33,5 +33,5 @@ steps:
       
 outputArtifacts:
   - name: chatbot_image_version
-    type: GENERIC_ARTIFACT
+    type: GENERIC
     location: version.txt
