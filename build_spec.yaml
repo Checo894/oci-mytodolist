@@ -4,7 +4,7 @@ timeoutInSeconds: 1000
 runAs: root
 
 exportedVariables:
-- CHATBOT_IMAGE_VERSION
+  - CHATBOT_IMAGE_VERSION
 
 steps:
   - type: Command
@@ -31,12 +31,12 @@ steps:
       docker push $OCIR_REGION/$NAMESPACE/$REPO_NAME:$CHATBOT_IMAGE_VERSION
       echo "Push completado."
 
-      # echo ${IMAGE_TAG} > version.txt
+      echo ${CHATBOT_IMAGE_VERSION} > version.txt
 
       echo "Build finalizado correctamente."
 
 outputArtifacts:
-  - name: chatbot_image_version
-    type: DOCKER_IMAGE
-    location: chatbotapp:${CHATBOT_IMAGE_VERSION}
+  - name: CHATBOT_IMAGE_VERSION
+    type: BINARY
+    location: version.txt
       
