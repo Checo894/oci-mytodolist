@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<OWASPZAPReport programName="ZAP" version="2.16.1" generated="Wed, 14 May 2025 04:34:18">
+<OWASPZAPReport programName="ZAP" version="2.16.1" generated="Mon, 26 May 2025 05:39:26">
 	
-		<site name="https://example.com" host="example.com" port="443" ssl="true">
+		<site name="http://140.84.167.112" host="140.84.167.112" port="80" ssl="false">
 			<alerts>
 				
 					<alertitem>
@@ -17,61 +17,9 @@
 						<instances>
 							
 								<instance>
-									<uri>https://example.com</uri>
+									<uri>http://140.84.167.112/</uri>
 									<method>GET</method>
 									<param></param>
-									<attack></attack>
-									<evidence></evidence>
-									<otherinfo></otherinfo>
-								</instance>
-							
-							
-								<instance>
-									<uri>https://example.com/robots.txt</uri>
-									<method>GET</method>
-									<param></param>
-									<attack></attack>
-									<evidence></evidence>
-									<otherinfo></otherinfo>
-								</instance>
-							
-							
-								<instance>
-									<uri>https://example.com/sitemap.xml</uri>
-									<method>GET</method>
-									<param></param>
-									<attack></attack>
-									<evidence></evidence>
-									<otherinfo></otherinfo>
-								</instance>
-							
-						</instances>
-						<count>3</count>
-						<solution>&lt;p&gt;Ensure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header.&lt;/p&gt;</solution>
-						<otherinfo></otherinfo>
-						<reference>&lt;p&gt;https://developer.mozilla.org/en-US/docs/Web/Security/CSP/Introducing_Content_Security_Policy&lt;/p&gt;&lt;p&gt;https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html&lt;/p&gt;&lt;p&gt;https://www.w3.org/TR/CSP/&lt;/p&gt;&lt;p&gt;https://w3c.github.io/webappsec-csp/&lt;/p&gt;&lt;p&gt;https://web.dev/articles/csp&lt;/p&gt;&lt;p&gt;https://caniuse.com/#feat=contentsecuritypolicy&lt;/p&gt;&lt;p&gt;https://content-security-policy.com/&lt;/p&gt;</reference>
-						<cweid>693</cweid>
-						<wascid>15</wascid>
-						<sourceid>1</sourceid>
-					</alertitem>
-				
-				
-					<alertitem>
-						<pluginid>10020</pluginid>
-						<alertRef>10020-1</alertRef>
-						<alert>Missing Anti-clickjacking Header</alert>
-						<name>Missing Anti-clickjacking Header</name>
-						<riskcode>2</riskcode>
-						<confidence>2</confidence>
-						<riskdesc>Medium (Medium)</riskdesc>
-						<confidencedesc>Medium</confidencedesc>
-						<desc>&lt;p&gt;The response does not protect against &apos;ClickJacking&apos; attacks. It should include either Content-Security-Policy with &apos;frame-ancestors&apos; directive or X-Frame-Options.&lt;/p&gt;</desc>
-						<instances>
-							
-								<instance>
-									<uri>https://example.com</uri>
-									<method>GET</method>
-									<param>x-frame-options</param>
 									<attack></attack>
 									<evidence></evidence>
 									<otherinfo></otherinfo>
@@ -79,62 +27,10 @@
 							
 						</instances>
 						<count>1</count>
-						<solution>&lt;p&gt;Modern Web browsers support the Content-Security-Policy and X-Frame-Options HTTP headers. Ensure one of them is set on all web pages returned by your site/app.&lt;/p&gt;&lt;p&gt;If you expect the page to be framed only by pages on your server (e.g. it&apos;s part of a FRAMESET) then you&apos;ll want to use SAMEORIGIN, otherwise if you never expect the page to be framed, you should use DENY. Alternatively consider implementing Content Security Policy&apos;s &quot;frame-ancestors&quot; directive.&lt;/p&gt;</solution>
+						<solution>&lt;p&gt;Ensure that your web server, application server, load balancer, etc. is configured to set the Content-Security-Policy header.&lt;/p&gt;</solution>
 						<otherinfo></otherinfo>
-						<reference>&lt;p&gt;https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Frame-Options&lt;/p&gt;</reference>
-						<cweid>1021</cweid>
-						<wascid>15</wascid>
-						<sourceid>1</sourceid>
-					</alertitem>
-				
-				
-					<alertitem>
-						<pluginid>10035</pluginid>
-						<alertRef>10035-1</alertRef>
-						<alert>Strict-Transport-Security Header Not Set</alert>
-						<name>Strict-Transport-Security Header Not Set</name>
-						<riskcode>1</riskcode>
-						<confidence>3</confidence>
-						<riskdesc>Low (High)</riskdesc>
-						<confidencedesc>High</confidencedesc>
-						<desc>&lt;p&gt;HTTP Strict Transport Security (HSTS) is a web security policy mechanism whereby a web server declares that complying user agents (such as a web browser) are to interact with it using only secure HTTPS connections (i.e. HTTP layered over TLS/SSL). HSTS is an IETF standards track protocol and is specified in RFC 6797.&lt;/p&gt;</desc>
-						<instances>
-							
-								<instance>
-									<uri>https://example.com</uri>
-									<method>GET</method>
-									<param></param>
-									<attack></attack>
-									<evidence></evidence>
-									<otherinfo></otherinfo>
-								</instance>
-							
-							
-								<instance>
-									<uri>https://example.com/robots.txt</uri>
-									<method>GET</method>
-									<param></param>
-									<attack></attack>
-									<evidence></evidence>
-									<otherinfo></otherinfo>
-								</instance>
-							
-							
-								<instance>
-									<uri>https://example.com/sitemap.xml</uri>
-									<method>GET</method>
-									<param></param>
-									<attack></attack>
-									<evidence></evidence>
-									<otherinfo></otherinfo>
-								</instance>
-							
-						</instances>
-						<count>3</count>
-						<solution>&lt;p&gt;Ensure that your web server, application server, load balancer, etc. is configured to enforce Strict-Transport-Security.&lt;/p&gt;</solution>
-						<otherinfo></otherinfo>
-						<reference>&lt;p&gt;https://cheatsheetseries.owasp.org/cheatsheets/HTTP_Strict_Transport_Security_Cheat_Sheet.html&lt;/p&gt;&lt;p&gt;https://owasp.org/www-community/Security_Headers&lt;/p&gt;&lt;p&gt;https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security&lt;/p&gt;&lt;p&gt;https://caniuse.com/stricttransportsecurity&lt;/p&gt;&lt;p&gt;https://datatracker.ietf.org/doc/html/rfc6797&lt;/p&gt;</reference>
-						<cweid>319</cweid>
+						<reference>&lt;p&gt;https://developer.mozilla.org/en-US/docs/Web/Security/CSP/Introducing_Content_Security_Policy&lt;/p&gt;&lt;p&gt;https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html&lt;/p&gt;&lt;p&gt;https://www.w3.org/TR/CSP/&lt;/p&gt;&lt;p&gt;https://w3c.github.io/webappsec-csp/&lt;/p&gt;&lt;p&gt;https://web.dev/articles/csp&lt;/p&gt;&lt;p&gt;https://caniuse.com/#feat=contentsecuritypolicy&lt;/p&gt;&lt;p&gt;https://content-security-policy.com/&lt;/p&gt;</reference>
+						<cweid>693</cweid>
 						<wascid>15</wascid>
 						<sourceid>6</sourceid>
 					</alertitem>
@@ -153,7 +49,18 @@
 						<instances>
 							
 								<instance>
-									<uri>https://example.com</uri>
+									<uri>http://140.84.167.112/ICBuZDkI7yajrsDeCJ4tqyETLHX8v3UXtHwy9E8DGBqS3VOFz_YBJjFQfNC1xux49_gsKW5LA4GmwtPgnL-0gw==</uri>
+									<method>GET</method>
+									<param>x-content-type-options</param>
+									<attack></attack>
+									<evidence></evidence>
+									<otherinfo>This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.
+At &quot;High&quot; threshold this scan rule will not alert on client or server error responses.</otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/M2gognMHQZQKdcdzmAvpKL0vO80Eh7W6MzNTI_9Isgq7Jc91ECLDWlArZlcpr0ho9dAvUBOlz_Jl65yX7FZfRQ==</uri>
 									<method>GET</method>
 									<param>x-content-type-options</param>
 									<attack></attack>
@@ -163,55 +70,229 @@ At &quot;High&quot; threshold this scan rule will not alert on client or server 
 								</instance>
 							
 						</instances>
-						<count>1</count>
+						<count>2</count>
 						<solution>&lt;p&gt;Ensure that the application/web server sets the Content-Type header appropriately, and that it sets the X-Content-Type-Options header to &apos;nosniff&apos; for all web pages.&lt;/p&gt;&lt;p&gt;If possible, ensure that the end user uses a standards-compliant and modern web browser that does not perform MIME-sniffing at all, or that can be directed by the web application/web server to not perform MIME-sniffing.&lt;/p&gt;</solution>
 						<otherinfo>&lt;p&gt;This issue still applies to error type pages (401, 403, 500, etc.) as those pages are often still affected by injection issues, in which case there is still concern for browsers sniffing pages away from their actual content type.&lt;/p&gt;&lt;p&gt;At &quot;High&quot; threshold this scan rule will not alert on client or server error responses.&lt;/p&gt;</otherinfo>
 						<reference>&lt;p&gt;https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/gg622941(v=vs.85)&lt;/p&gt;&lt;p&gt;https://owasp.org/www-community/Security_Headers&lt;/p&gt;</reference>
 						<cweid>693</cweid>
 						<wascid>15</wascid>
+						<sourceid>14</sourceid>
+					</alertitem>
+				
+				
+					<alertitem>
+						<pluginid>10027</pluginid>
+						<alertRef>10027</alertRef>
+						<alert>Information Disclosure - Suspicious Comments</alert>
+						<name>Information Disclosure - Suspicious Comments</name>
+						<riskcode>0</riskcode>
+						<confidence>1</confidence>
+						<riskdesc>Informational (Low)</riskdesc>
+						<confidencedesc>Low</confidencedesc>
+						<desc>&lt;p&gt;The response appears to contain suspicious comments which may help an attacker.&lt;/p&gt;</desc>
+						<instances>
+							
+								<instance>
+									<uri>http://140.84.167.112/M2gognMHQZQKdcdzmAvpKL0vO80Eh7W6MzNTI_9Isgq7Jc91ECLDWlArZlcpr0ho9dAvUBOlz_Jl65yX7FZfRQ==</uri>
+									<method>GET</method>
+									<param></param>
+									<attack></attack>
+									<evidence>from</evidence>
+									<otherinfo>The following pattern was used: \bFROM\b and was detected in likely comment: &quot;//www.w3.org/2000/svg&quot;&gt;&lt;path d=&quot;M4 6.92308C4 6.75694 4.09784 6.60639 4.24966 6.53891L12 3.09432l7.7503 3.44459C19.9022 6.60639 2&quot;, see evidence field for the suspicious comment/snippet.</otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/static/js/main.513b1529.js</uri>
+									<method>GET</method>
+									<param></param>
+									<attack></attack>
+									<evidence>query</evidence>
+									<otherinfo>The following pattern was used: \bQUERY\b and was detected in likely comment: &quot;//fb.me/use-check-prop-types&quot;);throw u.name=&quot;Invariant Violation&quot;,u}}function t(){return e}e.isRequired=e;var n={array:e,bigint:&quot;, see evidence field for the suspicious comment/snippet.</otherinfo>
+								</instance>
+							
+						</instances>
+						<count>2</count>
+						<solution>&lt;p&gt;Remove all comments that return information that may help an attacker and fix any underlying problems they refer to.&lt;/p&gt;</solution>
+						<otherinfo>&lt;p&gt;The following pattern was used: \bFROM\b and was detected in likely comment: &quot;//www.w3.org/2000/svg&quot;&gt;&lt;path d=&quot;M4 6.92308C4 6.75694 4.09784 6.60639 4.24966 6.53891L12 3.09432l7.7503 3.44459C19.9022 6.60639 2&quot;, see evidence field for the suspicious comment/snippet.&lt;/p&gt;</otherinfo>
+						<reference></reference>
+						<cweid>615</cweid>
+						<wascid>13</wascid>
+						<sourceid>15</sourceid>
+					</alertitem>
+				
+				
+					<alertitem>
+						<pluginid>10109</pluginid>
+						<alertRef>10109</alertRef>
+						<alert>Modern Web Application</alert>
+						<name>Modern Web Application</name>
+						<riskcode>0</riskcode>
+						<confidence>2</confidence>
+						<riskdesc>Informational (Medium)</riskdesc>
+						<confidencedesc>Medium</confidencedesc>
+						<desc>&lt;p&gt;The application appears to be a modern web application. If you need to explore it automatically then the Ajax Spider may well be more effective than the standard one.&lt;/p&gt;</desc>
+						<instances>
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param></param>
+									<attack></attack>
+									<evidence>&lt;script defer=&quot;defer&quot; src=&quot;./static/js/main.513b1529.js&quot;&gt;&lt;/script&gt;</evidence>
+									<otherinfo>No links have been found while there are scripts, which is an indication that this is a modern web application.</otherinfo>
+								</instance>
+							
+						</instances>
+						<count>1</count>
+						<solution>&lt;p&gt;This is an informational alert and so no changes are required.&lt;/p&gt;</solution>
+						<otherinfo>&lt;p&gt;No links have been found while there are scripts, which is an indication that this is a modern web application.&lt;/p&gt;</otherinfo>
+						<reference></reference>
+						<cweid>-1</cweid>
+						<wascid>-1</wascid>
 						<sourceid>6</sourceid>
 					</alertitem>
 				
 				
 					<alertitem>
-						<pluginid>10015</pluginid>
-						<alertRef>10015</alertRef>
-						<alert>Re-examine Cache-control Directives</alert>
-						<name>Re-examine Cache-control Directives</name>
+						<pluginid>10104</pluginid>
+						<alertRef>10104</alertRef>
+						<alert>User Agent Fuzzer</alert>
+						<name>User Agent Fuzzer</name>
 						<riskcode>0</riskcode>
-						<confidence>1</confidence>
-						<riskdesc>Informational (Low)</riskdesc>
-						<confidencedesc>Low</confidencedesc>
-						<desc>&lt;p&gt;The cache-control header has not been set properly or is missing, allowing the browser and proxies to cache content. For static assets like css, js, or image files this might be intended, however, the resources should be reviewed to ensure that no sensitive content will be cached.&lt;/p&gt;</desc>
+						<confidence>2</confidence>
+						<riskdesc>Informational (Medium)</riskdesc>
+						<confidencedesc>Medium</confidencedesc>
+						<desc>&lt;p&gt;Check for differences in response based on fuzzed User Agent (eg. mobile sites, access as a Search Engine Crawler). Compares the response statuscode and the hashcode of the response body with the original response.&lt;/p&gt;</desc>
 						<instances>
 							
 								<instance>
-									<uri>https://example.com</uri>
+									<uri>http://140.84.167.112/</uri>
 									<method>GET</method>
-									<param>cache-control</param>
-									<attack></attack>
-									<evidence>max-age=1542</evidence>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)</attack>
+									<evidence></evidence>
 									<otherinfo></otherinfo>
 								</instance>
 							
 							
 								<instance>
-									<uri>https://example.com</uri>
+									<uri>http://140.84.167.112/</uri>
 									<method>GET</method>
-									<param>cache-control</param>
-									<attack></attack>
-									<evidence>max-age=1543</evidence>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1)</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3739.0 Safari/537.36 Edg/75.0.109.0</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/91.0</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/5.0 (iPhone; CPU iPhone OS 8_0_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_0 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7A341 Safari/528.16</attack>
+									<evidence></evidence>
+									<otherinfo></otherinfo>
+								</instance>
+							
+							
+								<instance>
+									<uri>http://140.84.167.112/</uri>
+									<method>GET</method>
+									<param>Header User-Agent</param>
+									<attack>msnbot/1.1 (+http://search.msn.com/msnbot.htm)</attack>
+									<evidence></evidence>
 									<otherinfo></otherinfo>
 								</instance>
 							
 						</instances>
-						<count>2</count>
-						<solution>&lt;p&gt;For secure content, ensure the cache-control HTTP header is set with &quot;no-cache, no-store, must-revalidate&quot;. If an asset should be cached consider setting the directives &quot;public, max-age, immutable&quot;.&lt;/p&gt;</solution>
+						<count>12</count>
+						<solution></solution>
 						<otherinfo></otherinfo>
-						<reference>&lt;p&gt;https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html#web-content-caching&lt;/p&gt;&lt;p&gt;https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control&lt;/p&gt;&lt;p&gt;https://grayduck.mn/2021/09/13/cache-control-recommendations/&lt;/p&gt;</reference>
-						<cweid>525</cweid>
-						<wascid>13</wascid>
-						<sourceid>6</sourceid>
+						<reference>&lt;p&gt;https://owasp.org/wstg&lt;/p&gt;</reference>
+						<cweid>0</cweid>
+						<wascid>0</wascid>
+						<sourceid>109</sourceid>
 					</alertitem>
 				
 			</alerts>
