@@ -15,11 +15,6 @@ steps:
       export REPO_NAME=chatbotapp
       export IMAGE_TAG="v$(date +%Y%m%d%H%M%S)"
 
-      # PARTE 1000
-
-      mkdir -p /workspace/output
-      echo "{\"chatbot_image_version\": \"${IMAGE_TAG}\"}" > /workspace/output/output.json
-
       echo "Realizando docker login..."
       docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p '6XZl7aY(S#xb:8Z<+)_1'
       echo "Docker login exitoso."
@@ -35,4 +30,8 @@ steps:
       echo ${IMAGE_TAG} > version.txt
 
       echo "Build finalizado correctamente."
+
+outputArtifacts:
+  - name: chatbot_image_version
+    location: version.txt
       
