@@ -3,10 +3,13 @@ component: build
 timeoutInSeconds: 1000
 runAs: root
 
-parameters:
-  chatbot_image_version:
-    description: Versión de la imagen del chatbot
-    default: sprint4.5  # Valor por defecto si no se especifica otro
+env:
+  variables:
+  
+  vaultVariables:
+  
+  exportedVariables:
+    - CHATBOT_IMAGE_VERSION
 
 steps:
   - type: Command
@@ -18,21 +21,27 @@ steps:
       export OCIR_REGION=mx-queretaro-1.ocir.io
       export NAMESPACE=axnobyqhwayx
       export REPO_NAME=chatbotapp
-      export IMAGE_TAG=${chatbot_image_version}
+      export CHATBOT_IMAGE_VERSION="v$(date +%Y%m%d%H%M%S)"
+      echo "Tag generado: " $CHATBOT_IMAGE_VERSION
 
       echo "Realizando docker login..."
       docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p '6XZl7aY(S#xb:8Z<+)_1'
       echo "Docker login exitoso."
 
       echo "Construyendo imagen Docker..."
-      docker build -f MtdrSpring/backend/dockerfile --platform linux/amd64 -t $OCIR_REGION/$NAMESPACE/$REPO_NAME:$IMAGE_TAG MtdrSpring/backend/
+      docker build -f MtdrSpring/backend/dockerfile --platform linux/amd64 -t $OCIR_REGION/$NAMESPACE/$REPO_NAME:$CHATBOT_IMAGE_VERSION MtdrSpring/backend/
       echo "Construcción de imagen Docker completada."
 
       echo "Realizando push a OCIR..."
-      docker push $OCIR_REGION/$NAMESPACE/$REPO_NAME:$IMAGE_TAG
+      docker push $OCIR_REGION/$NAMESPACE/$REPO_NAME:$CHATBOT_IMAGE_VERSION
       echo "Push completado."
 
-      echo "chatbot_image_version=$IMAGE_TAG" >> $OCI_PRIMARY_BUILD_OUTPUT/env_vars
+      # echo ${CHATBOT_IMAGE_VERSION} > version.txt
 
       echo "Build finalizado correctamente."
+
+#outputArtifacts:
+#  - name: CHATBOT_IMAGE_VERSION
+#    type: BINARY
+#    location: version.txt
       
