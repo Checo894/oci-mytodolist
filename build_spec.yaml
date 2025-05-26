@@ -15,6 +15,7 @@ steps:
       export REPO_NAME=chatbotapp
       export IMAGE_TAG="v$(date +%Y%m%d%H%M%S)"
 
+      mkdir -p /workspace/output
       echo "{\"chatbot_image_version\": \"${IMAGE_TAG}\"}" > /workspace/output/output.json
 
       echo "Realizando docker login..."
