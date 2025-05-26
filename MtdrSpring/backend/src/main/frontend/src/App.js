@@ -11,10 +11,10 @@ function App() {
   return (
     <Router>
       <Switch>
-        {/* <Route exact path="/">
+        <Route exact path="/">
           <Redirect to="/login" />
-        </Route> */}
-        <Route path="/" component={LoginPage} />
+        </Route>
+        <Route path="/login" component={LoginPage} />
         <Route path="/developer" component={DeveloperView} />
         <Route exact path="/manager" component={ManagerView} />
         <Route exact path="/manager/task/:id" component={TaskDetailView} />
