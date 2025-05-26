@@ -3,9 +3,6 @@ component: build
 timeoutInSeconds: 1000
 runAs: root
 
-exportedVariables:
-  - CHATBOT_IMAGE_VERSION
-
 steps:
   - type: Command
     name: Build and Push Docker Image
