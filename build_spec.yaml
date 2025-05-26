@@ -4,7 +4,7 @@ timeoutInSeconds: 1000
 runAs: root
 
 exportedVariables:
-  - CHATBOT_IMAGE_VERSION
+- CHATBOT_IMAGE_VERSION
 
 steps:
   - type: Command
