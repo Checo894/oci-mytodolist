@@ -3,6 +3,14 @@ component: build
 timeoutInSeconds: 1000
 runAs: root
 
+env:
+  variables:
+  
+  vaultVariables:
+  
+  exportedVariables:
+    - CHATBOT_IMAGE_VERSION
+
 steps:
   - type: Command
     name: Build and Push Docker Image
@@ -14,7 +22,7 @@ steps:
       export NAMESPACE=axnobyqhwayx
       export REPO_NAME=chatbotapp
       export CHATBOT_IMAGE_VERSION="v$(date +%Y%m%d%H%M%S)"
-      echo "Tag generado: $CHATBOT_IMAGE_VERSION"
+      echo "Tag generado: " $CHATBOT_IMAGE_VERSION
 
       echo "Realizando docker login..."
       docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p '6XZl7aY(S#xb:8Z<+)_1'
@@ -28,12 +36,12 @@ steps:
       docker push $OCIR_REGION/$NAMESPACE/$REPO_NAME:$CHATBOT_IMAGE_VERSION
       echo "Push completado."
 
-      echo ${CHATBOT_IMAGE_VERSION} > version.txt
+      # echo ${CHATBOT_IMAGE_VERSION} > version.txt
 
       echo "Build finalizado correctamente."
 
-outputArtifacts:
-  - name: CHATBOT_IMAGE_VERSION
-    type: BINARY
-    location: version.txt
+#outputArtifacts:
+#  - name: CHATBOT_IMAGE_VERSION
+#    type: BINARY
+#    location: version.txt
       
