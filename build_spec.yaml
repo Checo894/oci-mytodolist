@@ -13,7 +13,7 @@ steps:
       export OCIR_REGION=mx-queretaro-1.ocir.io
       export NAMESPACE=axnobyqhwayx
       export REPO_NAME=chatbotapp
-      export IMAGE_TAG=sprint4.6
+      export IMAGE_TAG="v$(date +%Y%m%d%H%M%S)"
 
       echo "Realizando docker login..."
       docker login $OCIR_REGION -u 'axnobyqhwayx/a01068436@tec.mx' -p '6XZl7aY(S#xb:8Z<+)_1'
@@ -27,7 +27,11 @@ steps:
       docker push $OCIR_REGION/$NAMESPACE/$REPO_NAME:$IMAGE_TAG
       echo "Push completado."
 
-      echo "chatbot_image_version=$IMAGE_TAG" >> $OCI_PRIMARY_BUILD_OUTPUT/env_vars
+      echo ${IMAGE_TAG} > version.txt
 
       echo "Build finalizado correctamente."
       
+outputArtifacts:
+  - name: chatbot_image_version
+    type: GENERIC_ARTIFACT
+    location: version.txt
