@@ -591,7 +591,7 @@ function ManagerView() {
 
     return (
         <div>
-        <h1 className="manager-header">Bienvenido, {localStorage.getItem("name")}</h1>
+        <h1 className="manager-header">biendvenido, {localStorage.getItem("name")}</h1>
 
         {/* Pestañas */}
         <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)} aria-label="manager tabs">
