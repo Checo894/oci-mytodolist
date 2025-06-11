@@ -650,7 +650,7 @@ function ManagerView() {
             <DialogContent>
             {subtaskTaskDetails && (
                 <>
-                <h3>{subtaskTaskDetails.title}</h3>
+                <h3>{subtaskTaskDetails.task.title}</h3>
                 <p>{subtaskTaskDetails.task.description}</p>
                 <p><strong>Estado:</strong> {subtaskTaskDetails.task.status}</p>
                 <p><strong>Progreso:</strong> {subtaskTaskDetails.task.progress}</p>

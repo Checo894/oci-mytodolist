@@ -196,7 +196,7 @@ function DeveloperView() {
         <DialogContent>
           {taskDetails && (
             <>
-              <h3>{taskDetails.title}</h3>
+              <h3>{taskDetails.task.title}</h3>
               <p>{taskDetails.task.description}</p>
               <p><strong>Estado:</strong> {taskDetails.task.status}</p>
               <p><strong>Progreso:</strong> {taskDetails.task.progress}</p>
