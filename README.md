@@ -32,22 +32,33 @@ Follow these steps to clone, build, and run the project locally using Docker:
 ```bash
 git clone <your-repository-url>
 cd <your-project-folder>
+
 ```
-#### 2. Build the Docker image
+
+#### 2. Compile 
 Make sure you're in the root directory of the project where the Dockerfile is located.
 ```bash
-cd oci-mytodolist\MtdrSpring\backend 
+cd oci-mytodolist\MtdrSpring\backend
 ```
+
+execute 
+```
+mvn verify
+```
+
+
+#### 3. Build the Docker image
+
 execute
 ```bash
 docker build --platform linux/amd64 -t agileimage:0.1 .
 ```
-#### 3. Run the Docker container
+#### 4. Run the Docker container
 ```bash
 docker run --name agileContainer -p 8080:8080 -d agileimage:0.1
 
 ```
-####  4. Access the application
+####  5. Access the application
 Open your browser and go to: http://localhost:8080
 
 #### Notes:
